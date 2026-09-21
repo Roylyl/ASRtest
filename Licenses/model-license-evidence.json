@@ -1,0 +1,69 @@
+{
+  "checked_on": "2026-09-21",
+  "note": "License declarations from model publishers are recorded separately from implementation code licenses. Weight file revisions and hashes remain in ModelsManifest.json.",
+  "sources": [
+    {
+      "model": "zipformer",
+      "source": "https://huggingface.co/csukuangfj/k2fsa-zipformer-bilingual-zh-en-t/raw/e2382758de9a0219b4efe682b95af30b399db3b8/README.md",
+      "observed": "Apache-2.0 declared in pinned model card.",
+      "document_sha256": "037edf8e561cff512493746532af04f5c40cb6fbc55d3e360a399215b6b0b915",
+      "document_bytes": 4115
+    },
+    {
+      "model": "whisperTiny, whisperBase",
+      "source": "https://huggingface.co/ggerganov/whisper.cpp/raw/5359861c739e955e79d9a303bcbc70fb988958b1/README.md",
+      "observed": "MIT declared in pinned conversion card; retain OpenAI and whisper.cpp notices.",
+      "document_sha256": "21fd967098804f33fc84e803fb0e5ab7666d71801f4027cf28a65e7af09c1758",
+      "document_bytes": 3196
+    },
+    {
+      "model": "senseVoice-conversion",
+      "source": "https://huggingface.co/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/raw/2365baeacb507f821a0c8120fcee3d484dba7a07/README.md",
+      "observed": "Card identifies origin but contains no independent license declaration.",
+      "document_sha256": "763991a00edaea534ab36bf1b7cf89e61e911666dcfabbba71f91f9f7c593a63",
+      "document_bytes": 104
+    },
+    {
+      "model": "senseVoice-origin",
+      "source": "https://huggingface.co/FunAudioLLM/SenseVoiceSmall/raw/3847d57b6bdf2dd8875cb1508d2af43d80a16bf7/README.md",
+      "observed": "license: other; model-license links to FunASR MODEL_LICENSE. This current origin evidence does not establish historical terms of the pinned ONNX conversion.",
+      "document_sha256": "6add90487ea3d685b6604ad0932b565fc5cf7e9daaf8aebc674de49da4560958",
+      "document_bytes": 11952
+    },
+    {
+      "model": "paraformer",
+      "source": "https://huggingface.co/csukuangfj/sherpa-onnx-streaming-paraformer-bilingual-zh-en/raw/8e40c43232a1c5c66c82111efc5820d3accca11b/README.md",
+      "observed": "Apache-2.0 declared in pinned model card.",
+      "document_sha256": "16b56210f03531d00f5580b060ff6843461e618e5642c070a58df6f0a5c98875",
+      "document_bytes": 415
+    },
+    {
+      "model": "paraformer-origin",
+      "source": "https://www.modelscope.cn/api/v1/models/damo/speech_paraformer_asr_nat-zh-cn-16k-common-vocab8404-online/repo?Revision=master&FilePath=README.md",
+      "observed": "Original model card retrieved on audit date declares Apache License 2.0; master is mutable.",
+      "document_sha256": "844a7675599fa6fe9e6c1e7a49de5aa5795986004b09602946caa7933fcb1820",
+      "document_bytes": 12091
+    },
+    {
+      "model": "nano-encoder-decoder",
+      "source": "https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-GGUF/raw/46e849502a867080d66d351b8dfb1018b607e509/README.md",
+      "observed": "Apache-2.0 declared in pinned model card.",
+      "document_sha256": "7358d7de671a9d9d5f51aeb49a73084bdd34e3d45ce4b7b26bc1b9386e0de97a",
+      "document_bytes": 2649
+    },
+    {
+      "model": "nano-vad",
+      "source": "https://huggingface.co/FunAudioLLM/fsmn-vad-GGUF/raw/6840bae4c5c92ee8c04faaf4db23dd0105098d7f/README.md",
+      "observed": "Apache-2.0 declared in pinned model card.",
+      "document_sha256": "b7237acd3b448363792262b536c5c31f4277c22fad33177b3e95f18cf292ce9b",
+      "document_bytes": 1984
+    },
+    {
+      "model": "voskChinese, voskEnglish",
+      "source": "https://alphacephei.com/vosk/models",
+      "observed": "Official model list identifies both exact small model names as Apache 2.0; page is mutable.",
+      "document_sha256": "54ea4c1e367e18a67e8f4fce6232de62e5a467f8ec094266be7650efa1d7e77a",
+      "document_bytes": 43888
+    }
+  ]
+}

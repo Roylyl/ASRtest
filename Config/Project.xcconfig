@@ -1,0 +1,4 @@
+// Shared defaults. Personal signing values belong in ignored Local.xcconfig.
+ASR_DEVELOPMENT_TEAM =
+ASR_APP_BUNDLE_IDENTIFIER = com.example.asrtest
+#include? "Local.xcconfig"

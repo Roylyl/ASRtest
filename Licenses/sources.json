@@ -1,0 +1,90 @@
+{
+  "checked_on": "2026-09-21",
+  "scope": "Source/license evidence; not a complete binary SBOM or legal clearance. Model weights and third-party binary frameworks are local-only by default.",
+  "files": [
+    {
+      "file": "sherpa-onnx-APACHE-2.0.txt",
+      "source": "https://github.com/k2-fsa/sherpa-onnx/blob/11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358,
+      "note": "Copied verbatim from locally pinned source."
+    },
+    {
+      "file": "Fun-ASR-APACHE-2.0.txt",
+      "source": "https://github.com/QwenAudio/Fun-ASR/blob/0339018ba74a7defa3b6b6a96718d17b816be77b/LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357,
+      "note": "Copied verbatim from locally pinned source."
+    },
+    {
+      "file": "llama.cpp-MIT.txt",
+      "source": "https://github.com/ggml-org/llama.cpp/blob/8086439a4cea94c71a5dfb8fe4ad1546aebd640f/LICENSE",
+      "sha256": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d",
+      "bytes": 1078,
+      "note": "Copied verbatim from locally pinned source."
+    },
+    {
+      "file": "react-native-vosk-MIT.txt",
+      "source": "https://github.com/riderodd/react-native-vosk/blob/970d3d5e49225a1ebc24decbfd2d9317a02e7660/LICENSE",
+      "sha256": "d07d24c31013b4e3c18193a7e97eaa7faeb8ca6b681dde589c1463b9968ad28a",
+      "bytes": 1064,
+      "note": "Copied verbatim from locally pinned source."
+    },
+    {
+      "file": "whisper.cpp-MIT.txt",
+      "source": "https://raw.githubusercontent.com/ggml-org/whisper.cpp/927cfce34f31707e17f2bff35c349632fb9e2c3a/LICENSE",
+      "sha256": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d",
+      "bytes": 1078,
+      "note": "Retrieved verbatim from upstream."
+    },
+    {
+      "file": "OpenAI-Whisper-MIT.txt",
+      "source": "https://raw.githubusercontent.com/openai/whisper/86098128c0b4f24f0e2aa2994de830614b474227/LICENSE",
+      "sha256": "b5d65a59060e68c4ff940e1eddfa6f94b2d68fdf58ed7f4dd57721c997e35e9d",
+      "bytes": 1063,
+      "note": "Retrieved verbatim from upstream."
+    },
+    {
+      "file": "ONNX-Runtime-MIT.txt",
+      "source": "https://raw.githubusercontent.com/microsoft/onnxruntime/v1.28.2/LICENSE",
+      "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c",
+      "bytes": 1073,
+      "note": "Retrieved verbatim from upstream."
+    },
+    {
+      "file": "ONNX-Runtime-ThirdPartyNotices.txt",
+      "source": "https://raw.githubusercontent.com/microsoft/onnxruntime/v1.28.2/ThirdPartyNotices.txt",
+      "sha256": "0e07b95f3a8d6230037707c5c4a2b554d12c4cb67369669ac255635528ffcee2",
+      "bytes": 325054,
+      "note": "Retrieved verbatim from upstream."
+    },
+    {
+      "file": "Vosk-API-APACHE-2.0.txt",
+      "source": "https://raw.githubusercontent.com/alphacep/vosk-api/05adbfcc0df27a1535913c6accd4b7fc60ffd59d/COPYING",
+      "sha256": "bb618af833c817ab01c1564bd3ec75ba4b4f9cf30910a4a2168e30a674ee8cc6",
+      "bytes": 10173,
+      "note": "Retrieved verbatim from upstream. Vosk reference does not establish the bundled core version."
+    },
+    {
+      "file": "FunASR-MODEL_LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/modelscope/FunASR/1878d61dbe8942587acb1f5543ec77dc1ca1e73c/MODEL_LICENSE",
+      "sha256": "7dba975a2069691db4992b0592d70828b330d2f8a30a71450f4e152a554e84f8",
+      "bytes": 5306,
+      "note": "Retrieved verbatim from upstream."
+    },
+    {
+      "file": "SenseVoice-code-MIT.txt",
+      "source": "https://raw.githubusercontent.com/QwenAudio/SenseVoice/ea15219509625e5d4c5143c37c86970135886b5d/LICENSE",
+      "sha256": "4bc3bffe14ebe38cc67309991e04f92866835eac1c5e2e1abd37163f67c6de5f",
+      "bytes": 1062,
+      "note": "Retrieved verbatim from upstream."
+    },
+    {
+      "file": "FunASR-code-MIT.txt",
+      "source": "https://raw.githubusercontent.com/modelscope/FunASR/1878d61dbe8942587acb1f5543ec77dc1ca1e73c/LICENSE",
+      "sha256": "f382b62dcc61fc566b9215b1e3b604b539bfd96ed52ae1eeff5090f6dc176057",
+      "bytes": 1061,
+      "note": "Retrieved verbatim from upstream."
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+# macOS / editors
+.DS_Store
+._*
+.Trashes/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+# Xcode and SwiftPM generated state; keep shared schemes and Package.resolved
+xcuserdata/
+*.xcuserstate
+.swiftpm/
+.build/
+.build-native/
+DerivedData/
+build/
+*.app/
+*.ipa
+*.xcarchive/
+*.xcresult/
+*.dSYM/
+*.dSYM.zip
+*.hmap
+*.o
+*.a
+*.dylib
+*.swiftmodule
+*.swiftdoc
+*.swiftsourceinfo
+*.abi.json
+# Large third-party local assets: preserve on disk, exclude from Git
+/ModelLibrary/
+/Vendor/
+*.xcframework/
+*.framework/
+*.onnx
+*.gguf
+*.bin
+# Personal signing, credentials and local evidence
+/Config/Local.xcconfig
+/LocalBackup/
+.env
+.env.*
+!.env.example
+*.p12
+*.pfx
+*.p8
+*.pem
+*.key
+*.mobileprovision
+*.provisionprofile
+# Test outputs may contain speech, machine paths, simulator IDs and device data
+/Tests/**/*.json
+/Tests/**/*.jsonl
+/Tests/**/*.log
+/Tests/core-smoke/
+/Tests/model-store-build/
+/Tests/UITests/Artifacts/
+/Tests/runtime-link-shared-device
+/Tests/runtime-link-shared-simulator
+/Tests/runtime-link-static-device
+/Tests/runtime-link-static-simulator
+/Tests/standard-engine-smoke
+/Tests/nano/swift-simulator
+/Tests/nano/coexist-simulator
+*.f32
+*.wav
+*.mp3
+*.m4a
+*.pcm
+# Superseded reports and generated screenshots
+/Documentation/*调整前*
+/Documentation/*更新前*
+/Preview/*
+!/Preview/ui-test-light.png
+!/Preview/ui-test-dark.png
+# Python / CMake caches
+__pycache__/
+*.py[cod]
+.venv/
+CMakeFiles/
+CMakeCache.txt
+compile_commands.json

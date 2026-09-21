@@ -1,0 +1,5 @@
+_asr_nano_open
+_asr_nano_transcribe
+_asr_nano_text
+_asr_nano_error
+_asr_nano_close
