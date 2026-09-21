@@ -23,20 +23,11 @@ build/
 *.dSYM.zip
 *.hmap
 *.o
-*.a
 *.dylib
 *.swiftmodule
 *.swiftdoc
 *.swiftsourceinfo
 *.abi.json
-# Large third-party local assets: preserve on disk, exclude from Git
-/ModelLibrary/
-/Vendor/
-*.xcframework/
-*.framework/
-*.onnx
-*.gguf
-*.bin
 # Personal signing, credentials and local evidence
 /Config/Local.xcconfig
 /LocalBackup/
@@ -65,10 +56,10 @@ build/
 /Tests/nano/swift-simulator
 /Tests/nano/coexist-simulator
 *.f32
-*.wav
-*.mp3
-*.m4a
-*.pcm
+/Tests/**/*.wav
+/Tests/**/*.mp3
+/Tests/**/*.m4a
+/Tests/**/*.pcm
 # Superseded reports and generated screenshots
 /Documentation/*调整前*
 /Documentation/*更新前*
@@ -82,3 +73,16 @@ __pycache__/
 CMakeFiles/
 CMakeCache.txt
 compile_commands.json
+
+# Vendor contains clean, fixed-revision upstream source snapshots. Preserve
+# every upstream-tracked file even when a global ignore rule would normally
+# hide files such as .idea metadata, build scripts, Podfiles, or static libs.
+!/Vendor/
+!/Vendor/**
+/Vendor/**/.git/
+/Vendor/**/.build/
+
+# XCFrameworks are released project artifacts. Repository rules override a
+# developer's global *.a ignore so every declared slice remains versioned.
+!/Packages/**/*.xcframework/
+!/Packages/**/*.xcframework/**

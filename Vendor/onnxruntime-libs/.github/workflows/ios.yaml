@@ -1,0 +1,463 @@
+name: ios
+
+on:
+  push:
+    branches:
+      - release-v1.29.1
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version information (e.g., 1.28.2)"
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  ONNXRUNTIME_VERSION:
+    |- # Enter release tag name or version name in workflow_dispatch. Appropriate version if not specified
+    ${{ github.event.release.tag_name || github.event.inputs.version || '1.28.2' }}
+
+jobs:
+  ios:
+    name: ios-${{ matrix.link_type }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest]
+        link_type: ["shared", "static"]
+
+    steps:
+      - name: Checkout v${{ env.ONNXRUNTIME_VERSION }}
+        uses: actions/checkout@v4
+        with:
+          repository: microsoft/onnxruntime
+          submodules: true
+          ref: v${{ env.ONNXRUNTIME_VERSION }}
+
+      - name: Install dependencies on macos
+        shell: bash
+        run: |
+          brew install ninja
+          which cmake
+          cmake --version
+          brew install tree
+          tree --version
+
+          brew install jq
+          which jq
+
+      - name: Patch 1
+        shell: bash
+        run: |
+          jq '.build_params.base += ["--cmake_extra_defines=CMAKE_POLICY_VERSION_MINIMUM=3.5"]' \
+            tools/ci_build/github/apple/default_full_ios_framework_build_settings.json > output.json
+
+          mv output.json tools/ci_build/github/apple/default_full_ios_framework_build_settings.json
+
+          git diff .
+
+      - name: Patch 2
+        shell: bash
+        run: |
+          # see https://github.com/microsoft/onnxruntime/pull/26380
+          #
+          jq '.build_params.base += ["--cmake_extra_defines=FLATBUFFERS_BUILD_FLATC=OFF", "--cmake_extra_defines=onnxruntime_BUILD_UNIT_TESTS=OFF"]' \
+            tools/ci_build/github/apple/default_full_ios_framework_build_settings.json > output.json
+
+          mv output.json tools/ci_build/github/apple/default_full_ios_framework_build_settings.json
+
+          # Override deployment target to 13.0
+          jq '.build_params.iphoneos = [.build_params.iphoneos[] | sub("apple_deploy_target=[0-9.]+"; "apple_deploy_target=13.0")] |
+              .build_params.iphonesimulator = [.build_params.iphonesimulator[] | sub("apple_deploy_target=[0-9.]+"; "apple_deploy_target=13.0")]' \
+            tools/ci_build/github/apple/default_full_ios_framework_build_settings.json > output.json
+
+          mv output.json tools/ci_build/github/apple/default_full_ios_framework_build_settings.json
+
+          git diff .
+
+      - name: Patch 4
+        shell: bash
+        run: |
+          # jq '
+          #     del(.build_osx_archs.macabi)
+          #     | .build_osx_archs.iphonesimulator -= ["x86_64"]
+          #   ' tools/ci_build/github/apple/default_full_ios_framework_build_settings.json \
+          #   > tmp.json && mv tmp.json \
+          #   tools/ci_build/github/apple/default_full_ios_framework_build_settings.json
+
+          jq '
+              del(.build_osx_archs.macabi)
+            ' tools/ci_build/github/apple/default_full_ios_framework_build_settings.json \
+            > tmp.json && mv tmp.json \
+            tools/ci_build/github/apple/default_full_ios_framework_build_settings.json
+
+          git diff .
+
+      - name: Build onnxruntime ${{ env.ONNXRUNTIME_VERSION }} for macOS
+        shell: bash
+        run: |
+          cmake --version
+
+          # Reduce xcodebuild verbosity by patching build.py to add -quiet
+          python3 -c "
+          import re
+          with open('tools/ci_build/build.py', 'r') as f:
+              content = f.read()
+          content = re.sub(r\"(xcodebuild.*?) -project\", r\"\1 -quiet -project\", content)
+          with open('tools/ci_build/build.py', 'w') as f:
+              f.write(content)
+          print('Patched build.py to add -quiet to xcodebuild')
+          " || true
+
+          link_type=${{ matrix.link_type }}
+          if [[ $link_type == "shared" ]]; then
+            opts="--build_dynamic_framework"
+          else
+            opts=""
+          fi
+
+          echo "opts: $opts"
+
+          python3 tools/ci_build/github/apple/build_apple_framework.py \
+            --config Release \
+            $opts \
+            tools/ci_build/github/apple/default_full_ios_framework_build_settings.json
+
+      - name: Setup tmate session
+        if: false
+        uses: mxschmitt/action-tmate@v3
+
+      - name: Create onnxruntime XCFramework
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ls -lh build/apple_framework/intermediates/iphone*/Release/Release-*
+          tree build/apple_framework/intermediates/iphone*/Release/Release-*
+
+          BUILD_ROOT=build/apple_framework/framework_out
+          ls -lh $BUILD_ROOT
+          tree $BUILD_ROOT
+
+      - name: Add modulemap for SPM
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          MODULEMAP='module onnxruntime {
+              umbrella header "Headers/onnxruntime_c_api.h"
+              export *
+              module * { export * }
+          }'
+
+          # Add modulemap to each platform slice's framework
+          FW_ROOT=build/apple_framework/framework_out/onnxruntime.xcframework
+          for slice in "$FW_ROOT"/*/; do
+            if [[ -d "$slice/onnxruntime.framework/Headers" ]]; then
+              mkdir -p "$slice/onnxruntime.framework/Modules"
+              echo "$MODULEMAP" > "$slice/onnxruntime.framework/Modules/module.modulemap"
+              echo "Added modulemap to $slice"
+            fi
+          done
+
+      - name: Fix framework symlinks
+        shell: bash
+        run: |
+          # build_apple_framework.py may create flat directories instead of
+          # proper symlinks.  A correct versioned framework must have:
+          #   Versions/Current -> A
+          #   Headers          -> Versions/Current/Headers
+          #   Modules          -> Versions/Current/Modules
+          #   Resources        -> Versions/Current/Resources
+          #   onnxruntime      -> Versions/Current/onnxruntime
+          #
+          # Without these symlinks codesign (Xcode 26) fails with
+          # "unsealed contents present in the root directory of an embedded
+          # framework".  See https://github.com/csukuangfj/onnxruntime-libs/issues/62
+          FW_ROOT=build/apple_framework/framework_out/onnxruntime.xcframework
+          for slice in "$FW_ROOT"/*/; do
+            fw="$slice/onnxruntime.framework"
+            [[ -d "$fw/Versions/A" ]] || continue
+
+            for entry in Headers Modules Resources; do
+              if [[ -d "$fw/$entry" && ! -L "$fw/$entry" ]]; then
+                if [[ ! -d "$fw/Versions/A/$entry" ]]; then
+                  mv "$fw/$entry" "$fw/Versions/A/$entry"
+                else
+                  rm -rf "$fw/$entry"
+                fi
+              fi
+            done
+
+            if [[ -f "$fw/onnxruntime" && ! -L "$fw/onnxruntime" ]]; then
+              if [[ ! -f "$fw/Versions/A/onnxruntime" ]]; then
+                mv "$fw/onnxruntime" "$fw/Versions/A/onnxruntime"
+              else
+                rm -f "$fw/onnxruntime"
+              fi
+            fi
+
+            if [[ -d "$fw/Versions/Current" && ! -L "$fw/Versions/Current" ]]; then
+              rm -rf "$fw/Versions/Current"
+            fi
+            ln -sf A "$fw/Versions/Current"
+
+            ln -sf Versions/Current/Headers   "$fw/Headers"
+            ln -sf Versions/Current/Modules   "$fw/Modules"
+            ln -sf Versions/Current/Resources "$fw/Resources"
+            ln -sf Versions/Current/onnxruntime "$fw/onnxruntime"
+
+            echo "Fixed symlinks in $fw"
+            ls -la "$fw"
+            ls -la "$fw/Versions/"
+          done
+
+      - name: Verify deployment target
+        shell: bash
+        run: |
+          binary=$(find build/apple_framework/framework_out -name "onnxruntime" -type f | head -1)
+          if [ -z "$binary" ]; then
+            echo "WARNING: onnxruntime binary not found, skipping minos check"
+            exit 0
+          fi
+
+          echo "Checking minos of $binary"
+          otool_output=$(otool -l "$binary")
+          echo "$otool_output" | grep -E -A4 'LC_BUILD_VERSION' | head -20 || true
+
+          minos=$(echo "$otool_output" | grep -E -A4 'LC_BUILD_VERSION' | grep minos | awk '{print $2}' | head -1)
+          echo "minos: $minos"
+
+          # iOS deployment target should be 13.0 (ONNX Runtime minimum)
+          if [[ "$minos" != "13.0" ]]; then
+            echo "FAILED: expected minos 13.0, got $minos"
+            exit 1
+          fi
+          echo "PASSED: minos is $minos"
+
+      - name: Test onnxruntime (compile only)
+        shell: bash
+        run: |
+          # Find the framework inside the xcframework
+          fw=$(find build/apple_framework/framework_out -name "onnxruntime.framework" -type d | head -1)
+          if [ -z "$fw" ]; then
+            echo "WARNING: onnxruntime.framework not found, skipping test"
+            exit 0
+          fi
+
+          # Download test file
+          curl -sL https://raw.githubusercontent.com/csukuangfj/onnxruntime-libs/${{ github.ref }}/tests/test_onnxruntime.cc -o /tmp/test_onnxruntime.cc
+
+          # Compile only (can't run iOS binary on macOS host)
+          g++ -std=c++17 -c /tmp/test_onnxruntime.cc -o /tmp/test_onnxruntime.o \
+            -I"$fw/Headers"
+          echo "PASSED: compilation successful"
+
+      - name: Zip XCFramework
+        run: |
+          set -euo pipefail
+
+          cd build/apple_framework/framework_out
+
+          # Keep onnxruntime.xcframework name for SPM compatibility
+          # (SPM requires xcframework name to match the framework bundle identifier)
+          zip -ry onnxruntime-ios-${{ matrix.link_type }}-xcframework-${{ env.ONNXRUNTIME_VERSION }}.xcframework.zip \
+            onnxruntime.xcframework
+
+          ls -lh *.zip
+          mv *.zip $GITHUB_WORKSPACE/
+
+      - name: Upload artifact xcframework
+        uses: actions/upload-artifact@v4
+        with:
+          name: onnxruntime-ios-${{ matrix.link_type }}-xcframework-${{ env.ONNXRUNTIME_VERSION }}
+          path: onnxruntime-ios-${{ matrix.link_type }}-xcframework-${{ env.ONNXRUNTIME_VERSION }}.xcframework.zip
+
+  test-spm:
+    name: test-spm-${{ matrix.link_type }}
+    needs: ios
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        link_type: ["shared", "static"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: onnxruntime-ios-${{ matrix.link_type }}-xcframework-${{ env.ONNXRUNTIME_VERSION }}
+          path: xcframeworks
+
+      - name: Test local SPM (iOS)
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=${{ env.ONNXRUNTIME_VERSION }}
+          link_type=${{ matrix.link_type }}
+          zip_path="xcframeworks/onnxruntime-ios-${link_type}-xcframework-${version}.xcframework.zip"
+
+          cp .github/scripts/Package-ios-${link_type}.swift Package.swift
+          sed -i '' "s|__ZIP_PATH__|${zip_path}|g" Package.swift
+
+          cd spm-examples/iOS
+          sed -i.bak 's|.package(url: "https://github.com/csukuangfj/onnxruntime-libs", branch: "master")|.package(path: "../../")|' Package.swift
+          rm -rf .build
+          swift package resolve
+          swift package show-dependencies
+          xcodebuild -scheme VersionDemo \
+            -destination "generic/platform=iOS Simulator" \
+            -skipPackagePluginValidation \
+            build 2>&1
+
+  release:
+    name: release-${{ matrix.link_type }}
+    needs: test-spm
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        link_type: ["shared", "static"]
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: onnxruntime-ios-${{ matrix.link_type }}-xcframework-${{ env.ONNXRUNTIME_VERSION }}
+
+      - name: Upload v${{ env.ONNXRUNTIME_VERSION }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file_glob: true
+          file: "./*.zip"
+          overwrite: true
+          tag: v${{ env.ONNXRUNTIME_VERSION }}
+
+      - name: Publish to huggingface
+        if: github.repository_owner == 'csukuangfj'
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: 20
+          timeout_seconds: 200
+          shell: bash
+          command: |
+            version=${{ env.ONNXRUNTIME_VERSION }}
+            git config --global user.email "csukuangfj@gmail.com"
+            git config --global user.name "Fangjun Kuang"
+            export GIT_CLONE_PROTECTION_ACTIVE=false
+            rm -rf huggingface
+            GIT_LFS_SKIP_SMUDGE=1 git clone https://csukuangfj2:$HF_TOKEN@huggingface.co/csukuangfj2/onnxruntime-libs huggingface
+            cd huggingface
+            mkdir -p $version
+            cp -v ../onnxruntime-ios-${{ matrix.link_type }}.xcframework*.zip ./$version
+            git lfs track "*.zip"
+            git add .
+            git commit -m "upload onnxruntime-ios-${{ matrix.link_type }}.xcframework $version"
+            git push https://csukuangfj2:$HF_TOKEN@huggingface.co/csukuangfj2/onnxruntime-libs main
+# /Users/runner/work/onnxruntime-libs/onnxruntime-libs/build/apple_framework/intermediates/iphoneos_arm64/Release/Release-iphoneos
+# .
+# ├── libcoreml_proto.a
+# ├── libonnxruntime_common.a
+# ├── libonnxruntime_flatbuffers.a
+# ├── libonnxruntime_framework.a
+# ├── libonnxruntime_graph.a
+# ├── libonnxruntime_lora.a
+# ├── libonnxruntime_mlas.a
+# ├── libonnxruntime_optimizer.a
+# ├── libonnxruntime_providers_coreml.a
+# ├── libonnxruntime_providers_xnnpack.a
+# ├── libonnxruntime_providers.a
+# ├── libonnxruntime_session.a
+# ├── libonnxruntime_util.a
+# ├── onnxruntime_mlas_q4dq.app
+# │   ├── Info.plist
+# │   ├── onnxruntime_mlas_q4dq
+# │   └── PkgInfo
+# ├── onnxruntime.framework
+# │   ├── Headers
+# │   │   ├── coreml_provider_factory.h
+# │   │   ├── cpu_provider_factory.h
+# │   │   ├── onnxruntime_c_api.h
+# │   │   ├── onnxruntime_cxx_api.h
+# │   │   ├── onnxruntime_cxx_inline.h
+# │   │   ├── onnxruntime_ep_c_api.h
+# │   │   ├── onnxruntime_ep_device_ep_metadata_keys.h
+# │   │   ├── onnxruntime_float16.h
+# │   │   ├── onnxruntime_lite_custom_op.h
+# │   │   ├── onnxruntime_run_options_config_keys.h
+# │   │   └── onnxruntime_session_options_config_keys.h
+# │   ├── Info.plist
+# │   └── onnxruntime
+# └── static_framework
+#     └── onnxruntime.framework
+#         ├── Headers
+#         │   ├── coreml_provider_factory.h
+#         │   ├── cpu_provider_factory.h
+#         │   ├── onnxruntime_c_api.h
+#         │   ├── onnxruntime_cxx_api.h
+#         │   ├── onnxruntime_cxx_inline.h
+#         │   ├── onnxruntime_ep_c_api.h
+#         │   ├── onnxruntime_ep_device_ep_metadata_keys.h
+#         │   ├── onnxruntime_float16.h
+#         │   ├── onnxruntime_lite_custom_op.h
+#         │   ├── onnxruntime_run_options_config_keys.h
+#         │   └── onnxruntime_session_options_config_keys.h
+#         ├── Info.plist
+#         └── onnxruntime
+#
+# 7 directories, 42 files
+#
+# bash-3.2$ file static_framework/onnxruntime.framework/onnxruntime
+# static_framework/onnxruntime.framework/onnxruntime: current ar archive random library
+# bash-3.2$ ls -lh static_framework/onnxruntime.framework/onnxruntime
+# -rw-r--r--  1 runner  staff    37M Jan 14 07:03 static_framework/onnxruntime.framework/onnxruntime
+#
+# bash-3.2$ file onnxruntime.framework/onnxruntime
+# onnxruntime.framework/onnxruntime: Mach-O 64-bit dynamically linked shared library arm64
+# bash-3.2$ ls -lh onnxruntime.framework/onnxruntime
+# -rwxr-xr-x  1 runner  staff    24M Jan 14 07:03 onnxruntime.framework/onnxruntime
+#
+#
+# ===========shared==========
+#
+#
+# bash-3.2$ pwd
+# /Users/runner/work/onnxruntime-libs/onnxruntime-libs/build/apple_framework
+# bash-3.2$ ls
+# framework_out           intermediates           xcframework_info.json
+# /Users/runner/work/onnxruntime-libs/onnxruntime-libs/build/apple_framework/framework_out/onnxruntime.xcframework
+# bash-3.2$ pwd
+# /Users/runner/work/onnxruntime-libs/onnxruntime-libs/build/apple_framework/framework_out/onnxruntime.xcframework
+# bash-3.2$ ls -lh
+# total 8
+# -rw-r--r--  1 runner  staff   1.1K Jan 14 07:31 Info.plist
+# drwxr-xr-x  3 runner  staff    96B Jan 14 07:31 ios-arm64
+# drwxr-xr-x  3 runner  staff    96B Jan 14 07:31 ios-arm64-simulator
+# bash-3.2$ ls -lh ios-arm64/onnxruntime.framework/
+# total 50104
+# drwxr-xr-x  13 runner  staff   416B Jan 14 07:13 Headers
+# -rw-r--r--   1 runner  staff   670B Jan 14 07:13 Info.plist
+# -rwxr-xr-x   1 runner  staff    24M Jan 14 07:13 onnxruntime
+# bash-3.2$ file ios-arm64/onnxruntime.framework/onnxruntime
+# ios-arm64/onnxruntime.framework/onnxruntime: Mach-O universal binary with 1 architecture: [arm64:Mach-O 64-bit dynamically linked shared library arm64]
+# ios-arm64/onnxruntime.framework/onnxruntime (for architecture arm64):   Mach-O 64-bit dynamically linked shared library arm64
+# bash-3.2$ ls -lh ios-arm64-simulator/onnxruntime.framework/
+# total 50040
+# drwxr-xr-x  13 runner  staff   416B Jan 14 07:31 Headers
+# -rw-r--r--   1 runner  staff   670B Jan 14 07:31 Info.plist
+# -rwxr-xr-x   1 runner  staff    24M Jan 14 07:31 onnxruntime
+# bash-3.2$ file  ios-arm64-simulator/onnxruntime.framework/onnxruntime
+# ios-arm64-simulator/onnxruntime.framework/onnxruntime: Mach-O universal binary with 1 architecture: [arm64:Mach-O 64-bit dynamically linked shared library arm64]
+# ios-arm64-simulator/onnxruntime.framework/onnxruntime (for architecture arm64): Mach-O 64-bit dynamically linked shared library arm64
+#
+# bash-3.2$ rm -rf iphoneos_arm64/Release/_deps/
+# bash-3.2$ rm -rf iphoneos_arm64/Release/build
+# bash-3.2$ cd iphoneos_arm64/
+# bash-3.2$ pwd
+# /Users/runner/work/onnxruntime-libs/onnxruntime-libs/build/apple_framework/intermediates/iphoneos_arm64
+#  rm -rf static_libraries/temp

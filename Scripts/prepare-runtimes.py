@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Offline verification/restoration of ASRtest's ignored local runtime artifacts.
+"""Offline verification and copying of ASRtest runtime artifacts.
 
 This is a developer preparation tool, not an App download mechanism. No command
-in this tool accesses the network. --from accepts a complete ASRtest backup root.
-Source rebuilds are separate explicit commands (see RuntimeArtifactsManifest.json).
-The manifest hashes identify the original backup; rebuilt libraries are expected
-to have different hashes. --check-structure checks packaging, not recognition
-correctness, ABI equivalence, provenance, or license compliance.
+in this tool accesses the network. --from accepts another complete ASRtest
+checkout. Source rebuilds are separate explicit commands (see
+RuntimeArtifactsManifest.json). The manifest hashes identify the checked-in
+prebuilt artifacts; rebuilt libraries are expected to have different hashes.
+--check-structure checks packaging, not recognition correctness, ABI equivalence,
+provenance, or license compliance.
 """
 from pathlib import Path
 import argparse
@@ -45,7 +46,7 @@ def inventory(directory):
 
 def verify_identity(directory, runtime):
     actual = inventory(directory)
-    expected = runtime["backup_identity"]["files"]
+    expected = runtime["artifact_identity"]["files"]
     errors = []
     for relative in sorted(set(actual) | set(expected)):
         if relative not in actual:
@@ -55,8 +56,8 @@ def verify_identity(directory, runtime):
         elif actual[relative] != expected[relative]:
             errors.append("size/SHA256 mismatch " + relative)
     if errors:
-        raise ValueError(f"{runtime['id']} backup identity failed:\n  " + "\n  ".join(errors))
-    print(f"PASS {runtime['id']}: {len(expected)} files match backup SHA256")
+        raise ValueError(f"{runtime['id']} artifact identity failed:\n  " + "\n  ".join(errors))
+    print(f"PASS {runtime['id']}: {len(expected)} files match recorded SHA256")
 
 
 def inside(directory, relative):
@@ -110,7 +111,7 @@ def check_structure(directory, runtime):
     print(f"PASS {runtime['id']}: arm64 device/simulator, headers, module map, required symbols")
 
 
-def restore(source_root, target_root, runtime, replace):
+def copy_runtime(source_root, target_root, runtime, replace):
     source = source_root / runtime["path"]
     target = target_root / runtime["path"]
     verify_identity(source, runtime)
@@ -128,7 +129,7 @@ def restore(source_root, target_root, runtime, replace):
     if target.is_symlink():
         raise ValueError(f"Refusing symbolic-link destination: {target}")
     target.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix=".runtime-restore-", dir=target.parent) as temporary:
+    with tempfile.TemporaryDirectory(prefix=".runtime-copy-", dir=target.parent) as temporary:
         temporary = Path(temporary)
         staging = temporary / target.name
         shutil.copytree(source, staging)
@@ -142,15 +143,15 @@ def restore(source_root, target_root, runtime, replace):
             if previous.exists():
                 previous.rename(target)
             raise
-    print(f"RESTORED {runtime['id']}: {target}")
+    print(f"COPIED {runtime['id']}: {target}")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     operation = parser.add_mutually_exclusive_group(required=True)
-    operation.add_argument("--verify-only", action="store_true", help="Require exact original backup SHA256 for every file; offline")
+    operation.add_argument("--verify-only", action="store_true", help="Require the recorded SHA256 for every checked-in runtime file; offline")
     operation.add_argument("--check-structure", action="store_true", help="Check rebuilt or original packaging and required APIs using Xcode tools; not identity/inference validation")
-    operation.add_argument("--from", dest="source_root", type=Path, help="Restore from a complete local ASRtest backup root after exact SHA256 verification; offline")
+    operation.add_argument("--from", dest="source_root", type=Path, help="Copy from another complete ASRtest checkout after exact SHA256 verification; offline")
     parser.add_argument("--runtime", choices=["all", "whisper", "vosk", "nano"], default="all")
     parser.add_argument("--root", type=Path, default=ROOT, help="Destination/verification ASRtest root (default: this checkout)")
     parser.add_argument("--replace", action="store_true", help="With --from, permit replacement of a differing destination runtime")
@@ -164,7 +165,7 @@ def main():
         try:
             target = args.root.resolve() / runtime["path"]
             if args.source_root:
-                restore(args.source_root.resolve(), args.root.resolve(), runtime, args.replace)
+                copy_runtime(args.source_root.resolve(), args.root.resolve(), runtime, args.replace)
             elif args.check_structure:
                 check_structure(target, runtime)
             else:

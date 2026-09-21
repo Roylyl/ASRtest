@@ -1,0 +1,194 @@
+# Fun-ASR
+
+「[简体中文](README_zh.md)」|「[English](README.md)」|「日本語」
+
+> **FunASR 1.4.15:** 現在の Python リリースで、source install、MOSS の導線、realtime / industrial deployment を提供します。`python -m pip install -U "funasr==1.4.15"`。[Release ->](https://github.com/modelscope/FunASR/releases/tag/v1.4.15) · [Runtime v0.2.6 ->](https://github.com/modelscope/FunASR/releases/tag/runtime-llamacpp-v0.2.6)
+
+> **MOSS-Transcribe-Diarize:** OpenMOSS の第三者モデルで、オフライン長時間転写、timestamp、匿名 speaker label を一度に処理します。FunASR service、Docker、Kubernetes、vLLM、SGLang、LocalAI、FunClip のデプロイパスを利用できます。[MOSS をデプロイ ->](https://www.funasr.com/deploy/moss-transcribe-diarize.html)
+
+Fun-ASRは通義実験室が開発したエンドツーエンド音声認識モデルファミリーです。チェックポイントごとに対応範囲が異なり、Fun-ASR-Nano-2512は中・英・日と中国語方言・地域アクセント、Fun-ASR-MLT-Nano-2512は31言語に対応します。どちらもFunASRから推論・配信できます。
+
+<div align="center">
+<img src="images/funasr-v2.png">
+</div>
+
+<div align="center">
+<h4>
+<a href="https://www.funasr.com/en/"> ホームページ </a>
+｜<a href="#主要機能"> 主要機能 </a>
+｜<a href="#性能評価"> 性能評価 </a>
+｜<a href="#環境構築"> 環境構築 </a>
+｜<a href="#使い方"> 使い方 </a>
+
+</h4>
+
+モデルリポジトリ：**Fun-ASR-Nano**（[ModelScope](https://www.modelscope.cn/models/FunAudioLLM/Fun-ASR-Nano-2512)、[HF / Transformers](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512-hf) · [HF / FunASR](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512)、[GGUF](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-GGUF)） · **Fun-ASR-MLT-Nano**（[ModelScope](https://www.modelscope.cn/models/FunAudioLLM/Fun-ASR-MLT-Nano-2512)、[Hugging Face](https://huggingface.co/FunAudioLLM/Fun-ASR-MLT-Nano-2512)）
+
+オンラインデモ：
+[ModelScope Space](https://modelscope.cn/studios/FunAudioLLM/Fun-ASR-Nano)、[HuggingFace Space](https://huggingface.co/spaces/FunAudioLLM/Fun-ASR-Nano)
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/QwenAudio/Fun-ASR/blob/main/examples/colab/fun_asr_nano_transformers.ipynb)
+
+[実行可能なサンプル](examples/README.md) では、クイックスタート推論、直接推論、話者分離、vLLM バッチ推論、Streaming SDK を確認できます。
+
+</div>
+
+| モデル | 対応タスク | 学習データ | パラメータ |
+| :---: | :---: | :---: | :---: |
+| Fun-ASR-Nano <br> ([⭐](https://www.modelscope.cn/models/FunAudioLLM/Fun-ASR-Nano-2512) [HF / Transformers](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512-hf) · [HF / FunASR](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512)) | 中国語・英語・日本語の音声認識。中国語は7方言・26地域アクセント対応。英語・日本語も複数地域アクセントに対応。歌詞認識・ラップ音声認識も搭載。 | 数千万時間 | 8億 |
+| Fun-ASR-MLT-Nano <br> ([⭐](https://www.modelscope.cn/models/FunAudioLLM/Fun-ASR-MLT-Nano-2512) [🤗](https://huggingface.co/FunAudioLLM/Fun-ASR-MLT-Nano-2512)) | 中・英・粤・日・韓、ベトナム語、インドネシア語、タイ語、マレー語、フィリピン語、アラビア語、ヒンディー語など31言語の音声認識。 | 数十万時間 | 8億 |
+
+CPU/エッジ端末では、Fun-ASR-Nano を llama.cpp / GGUF ランタイムで単一バイナリとして実行できます（Python/GPU 不要、内蔵 FSMN-VAD）。[funasr.com/llama-cpp](https://www.funasr.com/llama-cpp.html) · [Nano GGUF](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-GGUF) · [FSMN-VAD GGUF](https://huggingface.co/FunAudioLLM/fsmn-vad-GGUF)
+
+# Transformers ネイティブクイックスタート
+
+リリース済み Transformers 5.17.0 で音声を文字起こしできます。FunASR toolkit やリモート Python コードは不要です。Nano は中国語・英語・日本語に対応し、31 言語の MLT は別 checkpoint です。
+
+```bash
+python -m pip install 'transformers==5.17.0' 'torch==2.10.0' 'torchaudio==2.10.0' 'librosa==0.11.0' 'soundfile==0.13.1'
+```
+
+[Python ガイド](https://www.funasr.com/en/docs/native-transformers.html) · [ローカル音声・バッチ・キーワード](examples/transformers/) · [Notebook](examples/colab/fun_asr_nano_transformers.ipynb) · [Space](https://huggingface.co/spaces/FunAudioLLM/Fun-ASR-Nano)
+
+```python
+import torch
+from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor
+
+torch.set_num_threads(4)
+model_id = "FunAudioLLM/Fun-ASR-Nano-2512-hf"
+revision = "d93b302ee7fd505e1b3576120fc142fc6f7820e1"
+audio = "https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512/resolve/272c57b82523ada6fd87095e955f8e29100979ab/example/en.mp3"
+
+processor = AutoProcessor.from_pretrained(
+    model_id, revision=revision, trust_remote_code=False, token=False
+)
+model = AutoModelForSpeechSeq2Seq.from_pretrained(
+    model_id, revision=revision, trust_remote_code=False, token=False,
+    dtype=torch.float32,
+).to("cpu").eval()
+inputs = processor.apply_transcription_request(
+    audio=audio, language="en",
+    processor_kwargs={
+        "return_tensors": "pt",
+        "audio_kwargs": {"sampling_rate": 16000},
+        "text_kwargs": {"padding": True},
+    },
+)
+with torch.inference_mode():
+    generated = model.generate(**inputs, max_new_tokens=128, do_sample=False)
+new_tokens = generated[:, inputs.input_ids.shape[1]:]
+print(processor.batch_decode(new_tokens, skip_special_tokens=True)[0])
+```
+
+<a name="主要機能"></a>
+
+# 主要機能 🎯
+
+- **遠距離・高ノイズ環境対応**：会議室、車内、工場など高ノイズ環境に最適化、認識精度 **93%** 達成
+- **中国語方言・地域アクセント**：7大方言 + 26地域アクセントに対応
+- **31言語多言語対応（MLT-Nano）**：東アジア・東南アジア言語を中心に31言語を認識
+- **音楽背景下の歌詞認識**：音楽干渉下での音声認識性能を強化
+- **ホットワード機能**：ドメイン固有用語の認識精度を向上
+- **FunASRパイプラインによる話者分離**：独立したFSMN-VADとCAM++を組み合わせて話者ラベルを生成
+- **vLLM推論エンジン**：バッチ推論で最大340倍リアルタイム速度
+
+<a name="環境構築"></a>
+
+# 環境構築 🐍
+
+```shell
+git clone https://github.com/QwenAudio/Fun-ASR.git
+cd Fun-ASR
+pip install -r requirements.txt
+```
+
+<a name="使い方"></a>
+
+# 機能の境界
+
+- **タイムスタンプ（配布元ごとの状態）**：現在のModelScope版`FunAudioLLM/Fun-ASR-Nano-2512`には、学習済みの`ctc_decoder.*` / `ctc.*`全86テンソルが含まれています（`model.pt` SHA-256：`81fec8616083c69377f3ceef36aba3655660ee0ca69a5d4a1e9810cd340ca499`）。一方、Hugging Face revision `272c57b82523ada6fd87095e955f8e29100979ab`はCTCテンソルを含まない旧テキスト専用版です（SHA-256：`55ae0d2fee369f0f11cce0795f6927934ad17cf11b278a7e56a51272074160bb`）。このリポジトリの現在の`model.py`を`funasr>=1.3.26`と共に使用すると、不完全なcheckpointのCTCを無効化し、転写テキストは返しますが、ランダムな60 msタイムスタンプは返しません。Hugging Faceの重みとremote codeの同期が完了するまでは、文字単位タイムスタンプに`hub="ms"`を使用してください（[issue #70](https://github.com/QwenAudio/Fun-ASR/issues/70)、[FunASR #3496](https://github.com/modelscope/FunASR/issues/3496)）。
+- **話者分離**：Nano/MLT checkpoint自体は話者ラベルを出力しません。FunASRで`fsmn-vad`と`cam++`を組み合わせます。
+
+# 使い方 🛠️
+
+## 基本的な推論
+
+```python
+from funasr import AutoModel
+
+model = AutoModel(
+    model="FunAudioLLM/Fun-ASR-Nano-2512",
+    trust_remote_code=True,
+    device="cuda:0",
+    hub="hf"
+)
+
+result = model.generate(
+    input=["audio.wav"],
+    batch_size=1,
+    language="日文",
+)
+print(result[0]["text"])
+```
+
+## FunASRパイプラインによる話者分離
+
+この例ではFSMN-VADが音声を分割し、Fun-ASRが文字起こしし、CAM++が話者ラベルを付与します。`sentence_info`の区間はVADセグメント境界であり、checkpoint由来の文字単位タイムスタンプではありません。
+
+```python
+model = AutoModel(
+    model="FunAudioLLM/Fun-ASR-Nano-2512",
+    trust_remote_code=True,
+    device="cuda:0",
+    hub="hf",
+    vad_model="fsmn-vad",
+    spk_model="cam++",
+    punc_model="ct-punc"
+)
+
+result = model.generate(input=["meeting.wav"], batch_size=1)
+for item in result:
+    if 'sentence_info' in item:
+        for sent in item['sentence_info']:
+            print(f"[話者{sent['spk']}] {sent['sentence']}")
+```
+
+## vLLM 高速推論
+
+```python
+from funasr.auto.auto_model_vllm import AutoModelVLLM
+
+model = AutoModelVLLM(
+    model="FunAudioLLM/Fun-ASR-Nano-2512",
+    tensor_parallel_size=2,
+)
+
+results = model.generate(["audio1.wav", "audio2.wav"], language="日文")
+```
+
+詳細は [vLLM推論ガイド](docs/vllm_guide.md) をご参照ください。
+
+<a name="性能評価"></a>
+
+# 性能評価 📊
+
+| モデル | GPUスピード | CPUスピード | vs Whisper-large-v3 |
+|--------|-----------|-----------|-------------------|
+| Fun-ASR-Nano (vLLM) | **340x** リアルタイム | — | 🚀 **26倍高速** |
+| SenseVoice-Small | **170x** リアルタイム | **17x** リアルタイム | 🚀 **13倍高速** |
+| Whisper-large-v3 | 13x リアルタイム | ❌ | 基準 |
+
+## エコシステム
+
+Fun-ASR-Nanoは **FunAudioLLM** ファミリーの一員です：
+
+| プロジェクト | 説明 | Stars |
+|-------------|------|-------|
+| [FunASR](https://github.com/modelscope/FunASR) | 産業用音声認識ツールキット — VAD、ASR、句読点、話者分離 | [![](https://img.shields.io/github/stars/modelscope/FunASR?style=social)](https://github.com/modelscope/FunASR) |
+| [SenseVoice](https://github.com/QwenAudio/SenseVoice) | 超高速ASR + 感情認識 + 音声イベント検出 | [![](https://img.shields.io/github/stars/QwenAudio/SenseVoice?style=social)](https://github.com/QwenAudio/SenseVoice) |
+| [CosyVoice](https://github.com/QwenAudio/CosyVoice) | 自然音声生成 — 多言語、ゼロショットクローニング | [![](https://img.shields.io/github/stars/QwenAudio/CosyVoice?style=social)](https://github.com/QwenAudio/CosyVoice) |
+| [FunClip](https://github.com/modelscope/FunClip) | AI音声認識による動画クリッピング | [![](https://img.shields.io/github/stars/modelscope/FunClip?style=social)](https://github.com/modelscope/FunClip) |
+
+## ライセンス
+
+[Apache 2.0](LICENSE)

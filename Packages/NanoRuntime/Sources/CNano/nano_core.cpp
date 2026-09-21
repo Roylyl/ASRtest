@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 // Adapted from Apache-2.0 QwenAudio/Fun-ASR at 0339018ba74a7defa3b6b6a96718d17b816be77b
 // funasr-cli: end-to-end Fun-ASR-Nano in C++ on the llama.cpp / ggml stack.
 //

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 struct asr_nano_context {
     asr_decoder decoder;
     std::string vad_path;

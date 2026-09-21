@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "description": "Local ignored ASR runtime artifacts. No App runtime network dependency. Sherpa-onnx is separately resolved through pinned SwiftPM dependencies.",
+  "description": "Versioned ASR runtime artifacts. No App runtime network dependency. Sherpa-onnx is separately resolved through pinned SwiftPM dependencies.",
   "created_date": "2026-09-21",
   "verification_policy": {
-    "exact_backup": "python3 Scripts/prepare-runtimes.py --verify-only",
-    "restore_local_backup": "python3 Scripts/prepare-runtimes.py --from /path/to/complete/ASRtest",
-    "source_builds": "Original backup SHA256 is not expected after rebuilding. --check-structure verifies slice packaging, arm64, headers, module maps and required exports only; it does not prove ABI or inference correctness."
+    "verify_checked_in_artifacts": "python3 Scripts/prepare-runtimes.py --verify-only",
+    "copy_from_another_checkout": "python3 Scripts/prepare-runtimes.py --from /path/to/complete/ASRtest",
+    "source_builds": "Checked-in artifact SHA256 is not expected after rebuilding. --check-structure verifies slice packaging, arm64, headers, module maps and required exports only; it does not prove ABI or inference correctness."
   },
   "runtimes": [
     {
@@ -17,7 +17,7 @@
       "header": "whisper.h",
       "build_configuration": "Release; arm64 iOS 17.0 and arm64 iOS Simulator; static framework; CPU and Accelerate; Metal and Core ML disabled",
       "source_build_command": "python3 Scripts/build-whisper.py --fetch",
-      "source_build_status": "Script provided from pinned source build structure; a clean source rebuild was not performed as part of this backup task. Validate App compilation and inference after rebuilding.",
+      "source_build_status": "Script provided for the pinned source revision; the checked-in artifact was validated by identity and App linkage rather than reproduced byte-for-byte in the current toolchain. Validate App compilation and inference after rebuilding.",
       "required_symbols": [
         "_whisper_context_default_params",
         "_whisper_free",
@@ -29,9 +29,9 @@
         "_whisper_is_multilingual",
         "_whisper_lang_id"
       ],
-      "backup_identity": {
-        "kind": "local_backup_sha256",
-        "note": "Exact identity of the known working backup; not a deterministic compiler-output or license guarantee.",
+      "artifact_identity": {
+        "kind": "checked_in_artifact_sha256",
+        "note": "Exact identity of the checked-in runtime artifact; not a deterministic compiler-output or license guarantee.",
         "files": {
           "Info.plist": {
             "bytes": 1149,
@@ -258,7 +258,7 @@
       "reference_header_repository": "https://github.com/alphacep/vosk-api",
       "reference_header_revision": "05adbfcc0df27a1535913c6accd4b7fc60ffd59d",
       "packaging_change": "Original static libraries retained; added Swift module headers and HeadersPath metadata.",
-      "restoration": "Use --from a complete local ASRtest backup. A fully audited source rebuild recipe for these exact community binaries is not available in this repository.",
+      "artifact_source": "The checked-in XCFramework and a provenance snapshot of the community package are included. A fully audited source rebuild recipe for these exact community binaries is not available in this repository.",
       "license_limit": "Recorded source and SHA256 establish artifact identity, not a complete audit of all statically linked dependency licenses. Do not claim full redistribution clearance from Vosk API Apache-2.0 alone.",
       "required_symbols": [
         "_vosk_model_free",
@@ -272,9 +272,9 @@
         "_vosk_recognizer_set_words",
         "_vosk_set_log_level"
       ],
-      "backup_identity": {
-        "kind": "local_backup_sha256",
-        "note": "Exact identity of the known working backup; not a deterministic compiler-output or license guarantee.",
+      "artifact_identity": {
+        "kind": "checked_in_artifact_sha256",
+        "note": "Exact identity of the checked-in runtime artifact; not a deterministic compiler-output or license guarantee.",
         "files": {
           "Info.plist": {
             "bytes": 1202,
@@ -317,7 +317,7 @@
       "header": "asr_nano.h",
       "build_configuration": "Release; arm64 iOS 17.0 and arm64 iOS Simulator; isolated dynamic framework; CPU; Metal disabled; only asr_nano_* exported",
       "source_build_command": "python3 Scripts/build-nano.py",
-      "source_build_note": "Explicit build command may fetch fixed official source revisions if absent. Rebuild outputs may differ from original backup bytes; run --check-structure --runtime nano, then App compilation and inference tests.",
+      "source_build_note": "The explicit build command validates fixed official source revisions. Rebuild outputs may differ from the checked-in artifact bytes; run --check-structure --runtime nano, then App compilation and inference tests.",
       "required_symbols": [
         "_asr_nano_open",
         "_asr_nano_transcribe",
@@ -325,9 +325,9 @@
         "_asr_nano_error",
         "_asr_nano_close"
       ],
-      "backup_identity": {
-        "kind": "local_backup_sha256",
-        "note": "Exact identity of the known working backup; not a deterministic compiler-output or license guarantee.",
+      "artifact_identity": {
+        "kind": "checked_in_artifact_sha256",
+        "note": "Exact identity of the checked-in runtime artifact; not a deterministic compiler-output or license guarantee.",
         "files": {
           "Info.plist": {
             "bytes": 1137,

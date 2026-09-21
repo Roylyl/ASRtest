@@ -1,0 +1,24 @@
+name: Repository checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source and LFS pointers
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          lfs: false
+      - name: Validate manifests, source snapshots, and LFS attributes
+        run: python3 Scripts/check-repository.py
+      - name: Check Python syntax
+        run: find Scripts Tests -type f -name '*.py' -print0 | xargs -0 python3 -m py_compile
+      - name: Check shell syntax
+        run: find Scripts Tests -type f -name '*.sh' -print0 | xargs -0 -n1 bash -n

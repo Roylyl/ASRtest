@@ -1,0 +1,63 @@
+name: Bug report
+description: Report a reproducible ASRtest failure
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Remove recordings, personal paths, signing data, and device identifiers before submitting.
+  - type: input
+    id: version
+    attributes:
+      label: ASRtest revision
+      description: Version or commit SHA
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Physical iPhone
+        - iOS Simulator
+        - Build only
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and operating-system version
+      description: Enter Not applicable for a build-only failure.
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Model configuration
+      description: Enter Not applicable if the failure occurs before model selection.
+    validations:
+      required: true
+  - type: input
+    id: toolchain
+    attributes:
+      label: Xcode, SDK, scheme, and build destination
+      description: Required for build failures; enter Not applicable for a runtime-only report.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected and actual result
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized logs
+      render: shell

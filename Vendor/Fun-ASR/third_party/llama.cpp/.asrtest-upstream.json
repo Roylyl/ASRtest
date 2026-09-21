@@ -1,0 +1,7 @@
+{
+  "repo": "https://github.com/ggml-org/llama.cpp.git",
+  "commit": "8086439a4cea94c71a5dfb8fe4ad1546aebd640f",
+  "tree": "6de5862fca5eb1d6241e75b65df90257ee362f6a",
+  "role": "Pinned llama.cpp and GGML source linked into NanoRuntime.",
+  "known_limit": "Vendored source snapshot without nested Git metadata."
+}

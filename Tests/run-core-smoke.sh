@@ -9,7 +9,7 @@ BUILD_ONLY=1 builds without running; WAV arguments are optional in this mode.
 SHERPA_ARTIFACTS defaults to <repository>/.build/SourcePackages/artifacts.
 First resolve Swift packages with -clonedSourcePackagesDirPath .build/SourcePackages.
 ASR_TEST_SIMULATOR selects a booted iOS simulator; default requires exactly one.
-ASR_NANO_SAMPLE can override the official Nano sample restored by build-nano.py.
+ASR_NANO_SAMPLE can override the official Nano sample in the vendored source snapshot.
 HELP
  exit 0
 fi
@@ -27,7 +27,7 @@ if [[ ! -d "$SHERPA" || ! -d "$ORT" ]]; then
  exit 1
 fi
 if [[ "${BUILD_ONLY:-0}" != 1 && ! -f "$NANO_SAMPLE" ]]; then
- echo 'Missing official Nano sample. Restore Nano sources with Scripts/build-nano.py or set ASR_NANO_SAMPLE to the same official sample.' >&2
+ echo 'Missing official Nano sample. Verify the vendored source snapshot or set ASR_NANO_SAMPLE to the same official sample.' >&2
  exit 1
 fi
 WHISPER="$ROOT/Packages/WhisperRuntime/whisper.xcframework/ios-arm64-simulator"

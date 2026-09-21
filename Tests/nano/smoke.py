@@ -21,7 +21,7 @@ SAMPLE = Path(os.environ.get("ASR_NANO_SAMPLE", ROOT / "Vendor/Fun-ASR/runtime/l
 if not FRAMEWORK.is_file():
     raise SystemExit("Build the optional macOS runtime with: python3 Scripts/build-nano.py --macos-only; or set ASR_NANO_MACOS_LIBRARY / --library")
 if not SAMPLE.is_file():
-    raise SystemExit("Missing official Nano sample; restore sources with Scripts/build-nano.py, or set ASR_NANO_SAMPLE to the same official sample")
+    raise SystemExit("Missing official Nano sample; verify the vendored source snapshot, or set ASR_NANO_SAMPLE to the same official sample")
 lib = C.CDLL(str(FRAMEWORK))
 cancel_type = C.CFUNCTYPE(C.c_int32, C.c_void_p)
 cancelled = threading.Event()

@@ -1,0 +1,13 @@
+ASRtest
+
+Copyright 2026 ASRtest contributors
+
+Except where a file or directory states otherwise, the Apache License 2.0 in
+the repository root applies to original ASRtest source code, documentation,
+tests, configuration, and project-created user-interface assets. It does not
+apply to third-party source code, binaries, model weights, trademarks, or media
+retained under separate licenses or terms. See THIRD_PARTY_NOTICES.md,
+Licenses/, and license files retained with vendored source code.
+
+Git LFS is used only as a storage mechanism. It does not alter or grant any
+license for third-party content.

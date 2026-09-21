@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "hash_algorithm": "sha256",
+  "hash_scope": "Exact byte stream produced by git archive --format=tar <commit>; excludes the ASRtest .asrtest-upstream.json marker added after export.",
+  "count_scope": "Materialized vendor directory including .asrtest-upstream.json. file_count includes regular files and symbolic links; total_bytes sums regular-file contents only.",
+  "sources": [
+    {
+      "name": "sherpa-onnx",
+      "path": "Vendor/sherpa-onnx",
+      "repo": "https://github.com/k2-fsa/sherpa-onnx.git",
+      "version": "1.13.8",
+      "commit": "11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf",
+      "tree": "6de2d2d8a1cd6d9b64554f42a8012739d93de881",
+      "archive_sha256": "e1c9b145e7129ae9869c0993131642e7e38c08d21e38fb6dbcd2cf3adde382c2",
+      "file_count": 6603,
+      "symlink_count": 273,
+      "total_bytes": 28833009,
+      "license_files": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "onnxruntime-libs",
+      "path": "Vendor/onnxruntime-libs",
+      "repo": "https://github.com/csukuangfj/onnxruntime-libs.git",
+      "version": "1.28.2",
+      "commit": "8ebc5ebf92190903c274a7621ba4c96a732335ec",
+      "tree": "24969f78023c0967c1211e0c9206fafa50c3b693",
+      "archive_sha256": "61098276d2648ae3d6747c02b61238064640b29f17739dcd85fa0e0b9aec8c19",
+      "file_count": 46,
+      "symlink_count": 1,
+      "total_bytes": 228562,
+      "license_files": []
+    },
+    {
+      "name": "whisper.cpp",
+      "path": "Vendor/whisper.cpp",
+      "repo": "https://github.com/ggml-org/whisper.cpp.git",
+      "version": "v1.9.4",
+      "commit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+      "tree": "db312954f67ca741569ac3a889a9ff329e51d952",
+      "archive_sha256": "368eb0598fb98e34b9103ca5d5c2d6656ab3c5e943ccfd3fdb621ced891535ef",
+      "file_count": 1960,
+      "symlink_count": 0,
+      "total_bytes": 38531073,
+      "license_files": [
+        "LICENSE",
+        "bindings/go/LICENSE",
+        "examples/wchess/wchess.wasm/chessboardjs-1.0.0/js/chessboard-1.0.0/LICENSE.md",
+        "tests/earnings21/normalizers/LICENSE",
+        "tests/librispeech-parakeet/normalizers/LICENSE",
+        "tests/librispeech/normalizers/LICENSE"
+      ]
+    },
+    {
+      "name": "react-native-vosk",
+      "path": "Vendor/react-native-vosk",
+      "repo": "https://github.com/riderodd/react-native-vosk.git",
+      "version": null,
+      "commit": "970d3d5e49225a1ebc24decbfd2d9317a02e7660",
+      "tree": "9d7af7c154514f2b8ea06639a6318b900a857c2d",
+      "archive_sha256": "74011874a4e0cdb562f8424737d7608662cacea08698f212f5903b96f1d0e9b6",
+      "file_count": 127,
+      "symlink_count": 0,
+      "total_bytes": 260167396,
+      "license_files": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "vosk-api",
+      "path": "Vendor/vosk-api",
+      "repo": "https://github.com/alphacep/vosk-api.git",
+      "version": null,
+      "commit": "05adbfcc0df27a1535913c6accd4b7fc60ffd59d",
+      "tree": "b698ebe3cc03089387b5db49592cfb8b9e498869",
+      "archive_sha256": "7fa37f56bf67617233495e70477ca3651e34f6ab567fe512602886459c46f1e5",
+      "file_count": 273,
+      "symlink_count": 3,
+      "total_bytes": 4391754,
+      "license_files": [
+        "COPYING",
+        "go/COPYING"
+      ]
+    },
+    {
+      "name": "Fun-ASR",
+      "path": "Vendor/Fun-ASR",
+      "repo": "https://github.com/QwenAudio/Fun-ASR.git",
+      "version": null,
+      "commit": "0339018ba74a7defa3b6b6a96718d17b816be77b",
+      "tree": "a9bc4dcfff704a63257d7cfa55ec5dff394a6d16",
+      "archive_sha256": "f9834ea5366b11891b8a081c23ac654369cd16040483e66e3f3e28ff2254e9b1",
+      "file_count": 100,
+      "symlink_count": 0,
+      "total_bytes": 5873729,
+      "count_excludes": [
+        "third_party/llama.cpp"
+      ],
+      "license_files": [
+        "LICENSE"
+      ]
+    },
+    {
+      "name": "llama.cpp",
+      "path": "Vendor/Fun-ASR/third_party/llama.cpp",
+      "repo": "https://github.com/ggml-org/llama.cpp.git",
+      "version": null,
+      "commit": "8086439a4cea94c71a5dfb8fe4ad1546aebd640f",
+      "tree": "6de5862fca5eb1d6241e75b65df90257ee362f6a",
+      "archive_sha256": "2a93c5f26cfea2629375f578391649a484b2c45af63d1b4daffb5b1462b43f54",
+      "file_count": 2995,
+      "symlink_count": 0,
+      "total_bytes": 154077668,
+      "license_files": [
+        "LICENSE",
+        "gguf-py/LICENSE",
+        "licenses/LICENSE-jsonhpp",
+        "vendor/cpp-httplib/LICENSE"
+      ]
+    }
+  ],
+  "totals": {
+    "source_count": 7,
+    "file_count": 12104,
+    "symlink_count": 277,
+    "total_bytes": 492103191
+  }
+}

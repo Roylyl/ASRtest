@@ -1,0 +1,7 @@
+{
+  "repo": "https://github.com/csukuangfj/onnxruntime-libs.git",
+  "commit": "8ebc5ebf92190903c274a7621ba4c96a732335ec",
+  "tree": "24969f78023c0967c1211e0c9206fafa50c3b693",
+  "role": "Swift Package Manager wrapper and Swift binding source used to resolve the ONNX Runtime libraries required by sherpa-onnx.",
+  "known_limit": "This repository is the package wrapper used by the build, not the Microsoft ONNX Runtime core source tree. The Xcode project continues to resolve it through Swift Package Manager; this copy must not be linked a second time."
+}

@@ -18,7 +18,7 @@ SAMPLE = Path(os.environ.get("ASR_NANO_SAMPLE", ROOT / "Vendor/Fun-ASR/runtime/l
 if not (NANO / "CNano.framework/CNano").is_file() or not (WHISPER / "whisper").is_file():
     raise SystemExit("Missing Nano/Whisper iOS simulator XCFrameworks; prepare local runtimes first")
 if not SAMPLE.is_file():
-    raise SystemExit("Missing official Nano sample; restore sources with Scripts/build-nano.py, or set ASR_NANO_SAMPLE to the same official sample")
+    raise SystemExit("Missing official Nano sample; verify the vendored source snapshot, or set ASR_NANO_SAMPLE to the same official sample")
 selection = ["python3", str(ROOT / "Scripts/select-ios-simulator.py"), "--booted"]
 if args.simulator:
     selection += ["--udid", args.simulator]

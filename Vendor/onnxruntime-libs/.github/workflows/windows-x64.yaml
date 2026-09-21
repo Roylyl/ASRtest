@@ -1,0 +1,228 @@
+name: windows-x64
+
+on:
+  push:
+    branches:
+      - release-v1.29.1-2
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version information (e.g., 1.29.1)"
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  ONNXRUNTIME_VERSION:
+    |- # Enter release tag name or version name in workflow_dispatch. Appropriate version if not specified
+    ${{ github.event.release.tag_name || github.event.inputs.version || '1.29.1' }}
+
+jobs:
+  windows_x64:
+    if: true
+    name: x64 static CRT ${{ matrix.use_static_crt }} ${{ matrix.build_type }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022]
+        use_static_crt: ["ON", "OFF"]
+        build_type: ["Debug", "MinSizeRel", "Release", "RelWithDebInfo"]
+
+    steps:
+      - name: Cache build result for ${{ env.ONNXRUNTIME_VERSION }}
+        id: cache-build-result
+        uses: actions/cache@v4
+        with:
+          path: onnxruntime-win-x64-static-crt-${{ matrix.use_static_crt }}-${{ matrix.build_type }}-${{ env.ONNXRUNTIME_VERSION }}
+          key: onnxruntime-win-x64-static-crt-${{ matrix.use_static_crt }}-${{ matrix.build_type }}-${{ env.ONNXRUNTIME_VERSION }}-cache-v1
+
+      - name: Checkout v${{ env.ONNXRUNTIME_VERSION }}
+        if: steps.cache-build-result.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: microsoft/onnxruntime
+          submodules: true
+          ref: v${{ env.ONNXRUNTIME_VERSION }}
+
+      - name: Install dependencies on Windows
+        if: steps.cache-build-result.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          python3 -m pip install cmake
+          cmake --version
+          cmake --help
+
+      - name: Build onnxruntime ${{ env.ONNXRUNTIME_VERSION }} for Win64
+        if: steps.cache-build-result.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          build_dir=./build/windows_x64
+          use_static_crt=${{ matrix.use_static_crt }}
+          if [[ $use_static_crt == ON ]]; then
+            extra_opt="--enable_msvc_static_runtime"
+          else
+            extra_opt=""
+          fi
+
+          python3 ./tools/ci_build/build.py \
+            --compile_no_warning_as_error \
+            --build_dir $build_dir \
+            --config ${{ matrix.build_type }} \
+            --parallel \
+            $extra_opt \
+            --cmake_generator "Visual Studio 17 2022" \
+            --skip_tests \
+            --build_shared_lib \
+            --disable_memleak_checker \
+            --cmake_extra_defines onnxruntime_BUILD_UNIT_TESTS=OFF \
+            --update \
+            --build
+
+      - name: Setup tmate session
+        if: false
+        uses: mxschmitt/action-tmate@v3
+
+      - name: Copy results
+        if: steps.cache-build-result.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+
+          build_dir=./build/windows_x64
+          version=${{ env.ONNXRUNTIME_VERSION }}
+
+          mkdir tmp
+          cd tmp
+          curl -SL -O https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x64-$version.zip
+          unzip onnxruntime-win-x64-$version.zip
+          ls -lh onnxruntime-win-x64-$version
+          cd ..
+
+          src=tmp/onnxruntime-win-x64-$version
+
+          use_static_crt=${{ matrix.use_static_crt }}
+          if [[ $use_static_crt == ON ]]; then
+            dst_dir=onnxruntime-win-x64-MT-${{ matrix.build_type }}-$version
+          else
+            dst_dir=onnxruntime-win-x64-MD-${{ matrix.build_type }}-$version
+          fi
+
+          mkdir -p $dst_dir
+          mkdir -p $dst_dir/lib
+
+          echo "copy libs"
+
+          cp -v $build_dir/${{ matrix.build_type }}/${{ matrix.build_type }}/onnxruntime.dll $dst_dir/lib
+          cp -v $build_dir/${{ matrix.build_type }}/${{ matrix.build_type }}/onnxruntime.lib $dst_dir/lib
+          cp -v $build_dir/${{ matrix.build_type }}/${{ matrix.build_type }}/onnxruntime.exp $dst_dir/lib
+
+          cp -v $build_dir/${{ matrix.build_type }}/${{ matrix.build_type }}/onnxruntime_providers_shared.dll $dst_dir/lib
+          cp -v $build_dir/${{ matrix.build_type }}/${{ matrix.build_type }}/onnxruntime_providers_shared.lib $dst_dir/lib
+          cp -v $build_dir/${{ matrix.build_type }}/${{ matrix.build_type }}/onnxruntime_providers_shared.exp $dst_dir/lib
+
+          ls -lh $dst_dir/lib
+
+          echo "copy headers"
+
+          mkdir $dst_dir/include
+
+          cp -v $src/include/*.h $dst_dir/include
+
+          echo "copy other files"
+
+          cp -v $src/GIT_COMMIT_ID $dst_dir/
+          cp -v $src/LICENSE $dst_dir/
+          cp -v $src/Privacy.md $dst_dir/
+          cp -v $src/README.md $dst_dir/
+          cp -v $src/ThirdPartyNotices.txt $dst_dir/
+          cp -v $src/VERSION_NUMBER $dst_dir/
+
+      - name: Test onnxruntime
+        if: steps.cache-build-result.outputs.cache-hit != 'true'
+        shell: cmd
+        run: |
+          if "${{ matrix.use_static_crt }}"=="ON" (set crt=MT) else (set crt=MD)
+          set artifact=onnxruntime-win-x64-%crt%-${{ matrix.build_type }}-${{ env.ONNXRUNTIME_VERSION }}
+          curl -sL https://raw.githubusercontent.com/csukuangfj/onnxruntime-libs/${{ github.ref }}/tests/test_onnxruntime.cc -o %TEMP%\test_onnxruntime.cc
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+          cl.exe /std:c++17 /EHsc /Fe:test_onnxruntime.exe %TEMP%\test_onnxruntime.cc /I%artifact%\include /link %artifact%\lib\onnxruntime.lib
+          test_onnxruntime.exe
+      - name: Upload artifact
+        if: steps.cache-build-result.outputs.cache-hit != 'true' && matrix.use_static_crt == 'ON'
+        uses: actions/upload-artifact@v4
+        with:
+          name: onnxruntime-win-x64-static-CRT-${{ matrix.use_static_crt }}-${{ matrix.build_type }}-${{ env.ONNXRUNTIME_VERSION }}
+          path: onnxruntime-win-x64-MT-${{ matrix.build_type }}-${{ env.ONNXRUNTIME_VERSION }}
+
+      - name: Test onnxruntime
+        if: steps.cache-build-result.outputs.cache-hit != 'true'
+        shell: cmd
+        run: |
+          if "${{ matrix.use_static_crt }}"=="ON" (set crt=MT) else (set crt=MD)
+          set artifact=onnxruntime-win-x64-%crt%-${{ matrix.build_type }}-${{ env.ONNXRUNTIME_VERSION }}
+          curl -sL https://raw.githubusercontent.com/csukuangfj/onnxruntime-libs/${{ github.ref }}/tests/test_onnxruntime.cc -o %TEMP%\test_onnxruntime.cc
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+          cl.exe /std:c++17 /EHsc /Fe:test_onnxruntime.exe %TEMP%\test_onnxruntime.cc /I%artifact%\include /link %artifact%\lib\onnxruntime.lib
+          test_onnxruntime.exe
+      - name: Upload artifact
+        if: steps.cache-build-result.outputs.cache-hit != 'true' && matrix.use_static_crt == 'OFF'
+        uses: actions/upload-artifact@v4
+        with:
+          name: onnxruntime-win-x64-static-CRT-${{ matrix.use_static_crt }}-${{ matrix.build_type }}-${{ env.ONNXRUNTIME_VERSION }}
+          path: onnxruntime-win-x64-MD-${{ matrix.build_type }}-${{ env.ONNXRUNTIME_VERSION }}
+
+
+      # https://huggingface.co/docs/hub/spaces-github-actions
+      - name: Publish to huggingface
+        if: github.repository_owner == 'csukuangfj' && steps.cache-build-result.outputs.cache-hit != 'true'
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: 20
+          timeout_seconds: 200
+          shell: bash
+          command: |
+            rm -rf huggingface
+            version=${{ env.ONNXRUNTIME_VERSION }}
+
+            use_static_crt=${{ matrix.use_static_crt }}
+            if [[ $use_static_crt == ON ]]; then
+              dst_dir=onnxruntime-win-x64-MT-${{ matrix.build_type }}-$version
+            else
+              dst_dir=onnxruntime-win-x64-MD-${{ matrix.build_type }}-$version
+            fi
+
+            tar cjvf $dst_dir.tar.bz2 $dst_dir
+
+            ls -lh
+
+            git config --global user.email "csukuangfj@gmail.com"
+            git config --global user.name "Fangjun Kuang"
+
+            export GIT_CLONE_PROTECTION_ACTIVE=false
+            GIT_LFS_SKIP_SMUDGE=1 git clone https://csukuangfj2:$HF_TOKEN@huggingface.co/csukuangfj2/onnxruntime-libs huggingface
+
+            cd huggingface
+            mkdir -p $version
+            cp -v ../$dst_dir.tar.bz2 ./$version
+            git status
+            git lfs track "*.bz2"
+
+            git add .
+
+            git commit -m "upload $dst_dir.tar.bz2"
+            git push https://csukuangfj2:$HF_TOKEN@huggingface.co/csukuangfj2/onnxruntime-libs main
+            cd ..
+            rm -rf huggingface
+
+
+      - name: Upload v${{ env.ONNXRUNTIME_VERSION }}
+        if: steps.cache-build-result.outputs.cache-hit != 'true'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file_glob: true
+          file: "./*.tar.bz2"
+          overwrite: false
+          tag: v${{ env.ONNXRUNTIME_VERSION }}

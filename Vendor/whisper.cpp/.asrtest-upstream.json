@@ -1,0 +1,7 @@
+{
+  "repo": "https://github.com/ggml-org/whisper.cpp.git",
+  "commit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+  "tree": "db312954f67ca741569ac3a889a9ff329e51d952",
+  "role": "Pinned upstream source snapshot for the local whisper.cpp inference runtime.",
+  "known_limit": "The application build uses the separately packaged runtime artifacts already present in the project. This source snapshot documents and exposes the corresponding upstream implementation without changing the build graph."
+}

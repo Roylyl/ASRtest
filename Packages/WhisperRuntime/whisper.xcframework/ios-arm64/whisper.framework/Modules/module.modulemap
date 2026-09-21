@@ -1,0 +1,4 @@
+framework module whisper {
+  header "whisper.h"
+  export *
+}

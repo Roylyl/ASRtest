@@ -23,9 +23,8 @@ after recording stops; it does not expose speculative live partial text.
   `6840bae4c5c92ee8c04faaf4db23dd0105098d7f`.
 
 The repository-level `ModelsManifest.json` records exact URLs, lengths, revisions,
-and SHA-256 digests for all three Nano files. Historical manifests under
-`ModelLibrary/nano/` remain local, ignored backup metadata; the application reads
-the repository-level manifest copied into its bundle.
+and SHA-256 digests for all three Nano files. The application reads the
+repository-level manifest copied into its bundle.
 
 The model set contains the 469,331,008-byte encoder/adaptor,
 484,219,776-byte ASR-trained Q4_K_M decoder, and 1,720,512-byte FSMN-VAD.
@@ -93,8 +92,8 @@ smoke suite; it is not shipped in the iOS binary package.
   and dynamic Nano in one process, keeps both model contexts alive, transcribes
   with Nano, and verifies Whisper's result before and after is identical.
 
-Historical evidence is retained only in the complete local backup and is ignored
-by Git: `Tests/nano/macos-results.json`, `Tests/nano/smoke.log`,
+Generated evidence is intentionally ignored by Git and can be reproduced locally:
+`Tests/nano/macos-results.json`, `Tests/nano/smoke.log`,
 `Tests/nano/coexist.log`, and `Tests/nano/build-final.log`.
 Successful Simulator execution does not establish physical-iPhone performance
 or production recognition accuracy.

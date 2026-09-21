@@ -1,0 +1,25 @@
+name: Feature request
+description: Propose an improvement to the local ASR test workflow
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Testing problem
+      description: Explain the ASR testing need and who it affects.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: local
+    attributes:
+      label: Local inference and licensing impact
+      description: Identify new runtimes, weights, network behavior, size, and licensing considerations. Enter None when the proposal has no such impact.
+    validations:
+      required: true

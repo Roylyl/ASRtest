@@ -4,8 +4,8 @@
 Fetches the fixed source revision only when --fetch is supplied; otherwise uses
 an existing clean checkout. Requires Xcode and CMake. Produces arm64 iOS device
 and arm64 simulator static XCFramework slices. No Metal/Core ML backend.
-Build outputs need App compilation and inference validation; original backup
-SHA256 values are NOT reproducibility promises for another compiler/SDK.
+Build outputs need App compilation and inference validation; the checked-in
+artifact SHA256 values are NOT reproducibility promises for another compiler/SDK.
 """
 from pathlib import Path
 import argparse
@@ -32,6 +32,13 @@ def output(arguments):
 
 
 def checkout(fetch):
+    marker = SOURCE / ".asrtest-upstream.json"
+    if marker.is_file():
+        value = json.loads(marker.read_text())
+        if (value.get("repo") != "https://github.com/ggml-org/whisper.cpp.git"
+                or value.get("commit") != REVISION):
+            raise RuntimeError("Vendored Whisper source marker does not match the pinned revision")
+        return
     if not (SOURCE / ".git").is_dir():
         if not fetch:
             raise RuntimeError("Pinned source is absent; use --fetch to authorize fetching official source")
@@ -95,7 +102,7 @@ def build_slice(sdk, jobs):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--fetch", action="store_true", help="Allow initial download of the fixed official source commit")
+    parser.add_argument("--fetch", action="store_true", help="Allow initial download only when the vendored source snapshot is absent")
     parser.add_argument("--replace", action="store_true", help="Replace an existing local XCFramework after successful build")
     parser.add_argument("--jobs", type=int, default=4)
     args = parser.parse_args()
@@ -129,7 +136,7 @@ def main():
                 previous.rename(destination)
             raise
     run(["python3", ROOT / "Scripts/prepare-runtimes.py", "--check-structure", "--runtime", "whisper"])
-    print("Whisper source rebuild complete; run App build/inference tests. Backup SHA256 identity is not expected.")
+    print("Whisper source rebuild complete; run App build/inference tests. A different artifact SHA256 is expected.")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,4 @@
+framework module CNano {
+  header "asr_nano.h"
+  export *
+}

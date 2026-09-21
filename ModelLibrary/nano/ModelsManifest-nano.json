@@ -1,0 +1,34 @@
+{
+  "models": [
+    {
+      "id": "nano",
+      "revision": "46e849502a867080d66d351b8dfb1018b607e509",
+      "files": [
+        {
+          "file": "funasr-encoder-f16.gguf",
+          "url": "https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-GGUF/resolve/46e849502a867080d66d351b8dfb1018b607e509/funasr-encoder-f16.gguf",
+          "revision": "46e849502a867080d66d351b8dfb1018b607e509",
+          "bytes": 469331008,
+          "sha256": "f92f91d01a24fbed6c863495b2ee8c6a6788144a02858b75743f0946668de8a2",
+          "path": "nano/funasr-encoder-f16.gguf"
+        },
+        {
+          "file": "qwen3-0.6b-q4km.gguf",
+          "url": "https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-GGUF/resolve/46e849502a867080d66d351b8dfb1018b607e509/qwen3-0.6b-q4km.gguf",
+          "revision": "46e849502a867080d66d351b8dfb1018b607e509",
+          "bytes": 484219776,
+          "sha256": "cc5057552aa9dddedcda73ea8889854e8a257eb07d0a561b7234465c1e856f22",
+          "path": "nano/qwen3-0.6b-q4km.gguf"
+        },
+        {
+          "file": "fsmn-vad.gguf",
+          "url": "https://huggingface.co/FunAudioLLM/fsmn-vad-GGUF/resolve/6840bae4c5c92ee8c04faaf4db23dd0105098d7f/fsmn-vad.gguf",
+          "revision": "6840bae4c5c92ee8c04faaf4db23dd0105098d7f",
+          "bytes": 1720512,
+          "sha256": "1270f2559c495f4e7b6e739541151027d360761a3fda43fc147034f5719f5479",
+          "path": "nano/fsmn-vad.gguf"
+        }
+      ]
+    }
+  ]
+}

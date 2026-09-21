@@ -1,0 +1,7 @@
+{
+  "repo": "https://github.com/alphacep/vosk-api.git",
+  "commit": "05adbfcc0df27a1535913c6accd4b7fc60ffd59d",
+  "tree": "b698ebe3cc03089387b5db49592cfb8b9e498869",
+  "role": "Pinned upstream Vosk API reference source for reviewing the native recognizer implementation and public interfaces.",
+  "known_limit": "This is a reference snapshot only. It does not prove that the community-provided precompiled Vosk iOS binary used by this project was built from this exact revision."
+}

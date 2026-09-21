@@ -1,0 +1,7 @@
+{
+  "repo": "https://github.com/riderodd/react-native-vosk.git",
+  "commit": "970d3d5e49225a1ebc24decbfd2d9317a02e7660",
+  "tree": "9d7af7c154514f2b8ea06639a6318b900a857c2d",
+  "role": "Pinned wrapper source and tracked iOS Vosk runtime distribution retained as provenance for the app's Vosk integration.",
+  "known_limit": "The tracked libvosk.xcframework contains precompiled binaries in addition to wrapper source and should be stored with Git LFS. Its presence does not establish which exact alphacep/vosk-api source revision was used to build those binaries."
+}
