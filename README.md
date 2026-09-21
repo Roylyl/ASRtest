@@ -1,12 +1,60 @@
+<div align="center">
+
+<img src="ASRtest/Assets.xcassets/AppIcon.appiconset/AppIcon.png" alt="ASRtest 应用图标" width="120" height="120">
+
 # ASRtest
 
-ASRtest 是一个完全本地运行的 iOS 端侧语音识别测试工具。它把多套 ASR 推理框架放在统一的录音、结果、计时、日志和模型切换界面中，方便在相同设备与输入条件下进行验证。当前版本为 **1.0.0**，最低支持 iOS 17；iOS 26 及以上使用系统 Liquid Glass，较旧系统使用原生兼容样式。
+**面向 iOS 的多引擎端侧语音识别验证工具**
 
-![浅色测试页](Preview/ui-test-light.png)
+[![Release](https://img.shields.io/github/v/release/Roylyl/ASRtest?display_name=tag&include_prereleases&sort=semver&style=flat-square)](https://github.com/Roylyl/ASRtest/releases)
+[![Downloads](https://img.shields.io/github/downloads/Roylyl/ASRtest/total?style=flat-square)](https://github.com/Roylyl/ASRtest/releases)
+[![Stars](https://img.shields.io/github/stars/Roylyl/ASRtest?style=flat-square)](https://github.com/Roylyl/ASRtest/stargazers)
+[![Forks](https://img.shields.io/github/forks/Roylyl/ASRtest?style=flat-square)](https://github.com/Roylyl/ASRtest/forks)
+[![Open Issues](https://img.shields.io/github/issues/Roylyl/ASRtest?style=flat-square)](https://github.com/Roylyl/ASRtest/issues)
+[![License](https://img.shields.io/github/license/Roylyl/ASRtest?style=flat-square)](LICENSE)
+[![Repo Size](https://img.shields.io/github/repo-size/Roylyl/ASRtest?style=flat-square)](https://github.com/Roylyl/ASRtest)
+[![Last Commit](https://img.shields.io/github/last-commit/Roylyl/ASRtest?style=flat-square)](https://github.com/Roylyl/ASRtest/commits/main)
+[![Repository checks](https://github.com/Roylyl/ASRtest/actions/workflows/repository-checks.yml/badge.svg)](https://github.com/Roylyl/ASRtest/actions/workflows/repository-checks.yml)
+[![Platform](https://img.shields.io/badge/platform-iOS%2017%2B-blue?style=flat-square)](#系统要求与构建)
+
+[项目概览](#项目概览) · [功能特性](#功能特性) · [界面预览](#界面预览) · [模型矩阵](#模型矩阵) · [快速开始](#快速开始) · [构建](#系统要求与构建) · [验证](#校验与测试) · [许可](#许可证与公开发布状态)
+
+</div>
+
+> [!IMPORTANT]
+> 当前完整资源 revision 是本地发布候选，尚未作为公共 Release 推送。SenseVoiceSmall 固定 ONNX 权重的历史许可对应关系，以及 Vosk 社区预编译库的完整传递依赖告知仍待确认；在这些问题解决前，不应公开发布当前完整资源集合。Git LFS 只负责存储，不代表取得或授予再分发权。
+
+## 项目概览
+
+ASRtest 是一个完全本地运行的 iOS 端侧语音识别测试工具。它把多套 ASR 推理框架放在统一的录音、结果、计时、日志和模型切换界面中，方便在相同设备与输入条件下进行验证。当前应用版本为 **1.0.0**，最低支持 iOS 17；iOS 26 及以上使用系统 Liquid Glass，较旧系统使用原生兼容样式。
 
 应用只有三个页面：测试、日志及模型信息、设置。流式模型显示实时结果，非流式模型在停止录音后转写。音频和识别记录留在设备本地，不使用云端 ASR、聊天、摘要或服务器推理。
 
-## 模型
+## 功能特性
+
+- **八组本地 ASR 配置**：统一接入 sherpa-onnx、whisper.cpp、Vosk，以及 Fun-ASR / llama.cpp / GGML 原生移植。
+- **统一测试工作流**：在同一套录音、结果、计时、日志、模型信息和设置界面中比较不同后端。
+- **流式与非流式覆盖**：流式模型实时显示结果，非流式模型在停止录音后转写。
+- **资源可验证**：模型与本地运行库分别由清单记录来源、固定 revision、字节数和 SHA256，并在运行前校验。
+- **本地优先**：安装后的语音识别不访问网络；录音与识别记录保留在设备本地。
+- **自动化检查入口**：包含仓库元数据、模型存储、标准后端、统一核心和界面导航检查脚本。
+
+## 界面预览
+
+<table>
+  <tr>
+    <td align="center"><img src="Preview/ui-test-light.png" alt="浅色测试页" width="240"><br><sub>测试页 · 浅色</sub></td>
+    <td align="center"><img src="Preview/ui-test-dark.png" alt="深色测试页" width="240"><br><sub>测试页 · 深色</sub></td>
+    <td align="center"><img src="Preview/ui-model-selector-light.png" alt="模型选择器" width="240"><br><sub>模型选择</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="Preview/ui-logs-light.png" alt="日志页" width="240"><br><sub>日志与模型信息</sub></td>
+    <td align="center"><img src="Preview/ui-settings-light.png" alt="设置页" width="240"><br><sub>设置</sub></td>
+    <td align="center"><img src="Preview/ui-progress.png" alt="模型加载进度" width="240"><br><sub>模型加载进度</sub></td>
+  </tr>
+</table>
+
+## 模型矩阵
 
 | 配置 | 推理框架 | App 提供的语言选项 | 方式 | 必要模型大小 |
 |---|---|---|---|---:|
@@ -23,7 +71,7 @@ ASRtest 是一个完全本地运行的 iOS 端侧语音识别测试工具。它�
 
 一次只加载一个模型。当前每轮流式录音上限为 600 秒，非流式为 30 秒，这是测试工具的限制。Nano 是实验性 iOS 移植；物理 iPhone 上的峰值内存、耗电、温升和长时间稳定性仍需实测。
 
-## 获取完整仓库
+## 快速开始
 
 先安装 [Git LFS](https://git-lfs.com/)，再克隆并拉取大文件：
 
@@ -38,7 +86,7 @@ python3 Scripts/prepare-runtimes.py --verify-only
 
 模型、XCFramework 和 Vendor 源码均属于仓库版本内容；克隆后由 Git LFS 取得对应对象。`ModelsManifest.json` 记录模型来源、固定 revision、字节数和 SHA256；`RuntimeArtifactsManifest.json` 记录运行库指纹与来源。校验失败时应查明文件或版本差异，不能仅修改清单哈希。
 
-## 构建
+## 系统要求与构建
 
 需要 Apple Silicon Mac、完整 Xcode 和 iOS 17 以上 SDK。本项目使用 Xcode 27.1 / iOS 27.1 SDK 完成当前检查；本地运行库提供 arm64 iPhone 和 Apple Silicon 上的 arm64 iOS Simulator 切片，不提供 Intel Simulator 的完整组合。
 
@@ -56,7 +104,7 @@ python3 Scripts/prepare-runtimes.py --verify-only
 
 安装后的 ASR 推理不访问网络。Xcode 下载依赖、开发者签名与 App 离线识别是不同环节。
 
-## 源码与目录
+## 架构与目录
 
 ```text
 ASRtest/                       SwiftUI、录音控制、模型目录与识别后端
