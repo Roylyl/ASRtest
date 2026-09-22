@@ -50,9 +50,11 @@ ASRtest 是一个完全本地运行的 iOS 端侧语音识别测试工具。它�
   <tr>
     <td align="center"><img src="Preview/ui-logs-light.png" alt="日志页" width="240"><br><sub>日志与模型信息</sub></td>
     <td align="center"><img src="Preview/ui-settings-light.png" alt="设置页" width="240"><br><sub>设置</sub></td>
-    <td align="center"><img src="Preview/ui-progress.png" alt="模型加载进度" width="240"><br><sub>模型加载进度</sub></td>
+    <td align="center"><img src="Preview/ui-models-light.png" alt="模型信息页" width="240"><br><sub>模型信息</sub></td>
   </tr>
 </table>
+
+以上截图由 `ASRtestUISmoke` 在 iPhone 18 Pro、iOS 27.0 模拟器中从当前源码自动生成；用于展示界面与导航，不代表真机识别准确率、耗时、内存或温升。
 
 ## 模型矩阵
 

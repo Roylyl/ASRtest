@@ -60,12 +60,16 @@ build/
 /Tests/**/*.mp3
 /Tests/**/*.m4a
 /Tests/**/*.pcm
-# Superseded reports and generated screenshots
+# Superseded reports and non-public generated screenshots
 /Documentation/*调整前*
 /Documentation/*更新前*
 /Preview/*
 !/Preview/ui-test-light.png
 !/Preview/ui-test-dark.png
+!/Preview/ui-model-selector-light.png
+!/Preview/ui-logs-light.png
+!/Preview/ui-settings-light.png
+!/Preview/ui-models-light.png
 # Python / CMake caches
 __pycache__/
 *.py[cod]
