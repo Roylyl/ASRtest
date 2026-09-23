@@ -1,7 +1,34 @@
+<div align="center">
+
+<img src="ASRtest/Assets.xcassets/AppIcon.appiconset/AppIcon.png" width="128" height="128" alt="ASRtest iOS 应用图标">
+
 # ASRtest
+
+### iPhone、iPad 与 Apple Watch 的离线语音识别模型测试工具
+
+[![Version](https://img.shields.io/badge/version-2.0.0-2563eb?style=flat-square)](ASRtest.xcodeproj/project.pbxproj)
+[![iOS](https://img.shields.io/badge/iOS-17%2B-111827?style=flat-square)](#1-打开与运行)
+[![watchOS](https://img.shields.io/badge/watchOS-10%2B-111827?style=flat-square)](#apple-watch-本地运行库与许可)
+[![Models](https://img.shields.io/badge/iOS%20models-8-0f766e?style=flat-square)](#3-已接入模型)
+[![Offline](https://img.shields.io/badge/inference-on--device-0f766e?style=flat-square)](#离线测试)
+[![License](https://img.shields.io/badge/license-Apache--2.0-64748b?style=flat-square)](LICENSE)
+
+[项目速览](#项目速览) · [界面预览](#界面预览) · [打开与运行](#1-打开与运行) · [已接入模型](#3-已接入模型) · [测试记录](#5-测试记录与指标) · [验证与边界](#7-已完成的验证与边界) · [常见问题](#8-常见问题)
+
+</div>
 
 ASRtest 2.0.0 是一个完全本地运行的 iOS ASR 模型测试工具，由原 ASRtest1IOS、ASRtest2IOS、ASRtest3IOS 整合而来。iPhone/iPad 端八组模型及必要运行库全部随 App 打包，使用同一套录音、模型切换和测试记录界面。首次安装后即可离线切换使用，无需另行获取模型。配套 Watch App 只包含 Whisper tiny，不使用 iPhone 代算。识别过程中不上传音频，不包含云端 ASR、聊天或摘要功能。
 工程入口为 `ASRtest.xcodeproj`；iOS Scheme 为 `ASRtest`，Watch Scheme 为 `ASRtestWatch`。最低系统版本为 iOS 17.0 和 watchOS 10.0。iOS 支持 arm64 iPhone/iPad 及 Apple Silicon Mac 的 arm64 Simulator；现有依赖不支持 Intel Mac 的 x86_64 Simulator。真机安装需在 Xcode 中配置自己的开发团队与 Bundle Identifier，且 iPhone App 与 Watch App 均需满足签名要求。
+
+## 项目速览
+
+| 项目 | 当前工程 |
+|---|---|
+| 应用版本 | `2.0.0` |
+| iPhone / iPad | 八组随 App 打包的本地 ASR 模型；支持录音、单文件与批量 WAV 测试 |
+| Apple Watch | 手表本地运行 Whisper tiny，提供向配对 iPhone 传输日志的流程 |
+| 数据处理 | 音频与推理保留在设备上；日志可在 App 内查看和导出 |
+| 工程与许可 | `ASRtest.xcodeproj`；项目源码采用 [Apache-2.0](LICENSE)，第三方材料见 [署名与许可清单](THIRD_PARTY_NOTICES.md) |
 
 ## 界面预览
 
