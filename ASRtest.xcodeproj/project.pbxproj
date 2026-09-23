@@ -7,13 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		076143680DC80F1CD1A1C2A2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6099596FAD3150B764132582 /* Assets.xcassets */; };
+		0F9D9C0ED9160E3BF6F60D2F /* WatchContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2C51F66D4C83575800640AE /* WatchContentView.swift */; };
+		10F997BBD91DC822A42DD831 /* WatchASRController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF3DA7D116FEC288DF70DC93 /* WatchASRController.swift */; };
 		A10000000000000000000001 /* ASRRuntimes in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000002 /* ASRRuntimes */; };
 		B10000000000000000000001 /* NanoRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = B10000000000000000000002 /* NanoRuntime */; };
+		B8F37DE65FE8D7CBAB301B3D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E8A4CA7898D6A3D07F82304E /* Foundation.framework */; };
+		BE76EB8FAA031E54109687EA /* ggml-tiny.bin in Resources */ = {isa = PBXBuildFile; fileRef = 6319F5226CD33A63B4544052 /* ggml-tiny.bin */; };
 		C10000000000000000000001 /* ModelLibrary in Resources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000002 /* ModelLibrary */; };
+		D2A1FD75067661178561FFA7 /* ASRtestWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B4B4EE23F16914BA7A5C3D /* ASRtestWatchApp.swift */; };
+		D85DB277DCF9EF44FBF27791 /* WatchASRLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131579F23B3F04409C167FE4 /* WatchASRLog.swift */; };
 		E60000000000000000000001 /* ASRtestUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E60000000000000000000002 /* ASRtestUITests.swift */; };
+		FADC0196643B3C65394D9458 /* WatchWhisper.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92BB416A635D107C5ED66444 /* WatchWhisper.xcframework */; };
+		9F034EDC81D848BF21A522F4 /* ASRtestWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 50EC0936BE74F343FA407998 /* ASRtestWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		A257061D3063C9CE008B2887 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 000000000000000000000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 244DCFED272608B0D33C283E;
+			remoteInfo = ASRtestWatch;
+		};
 		E60000000000000000000008 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 000000000000000000000000 /* Project object */;
@@ -23,20 +39,32 @@
 		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXTargetDependency section */
-		E60000000000000000000009 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 000000000000000100000000 /* ASRtest */;
-			targetProxy = E60000000000000000000008 /* PBXContainerItemProxy */;
+/* Begin PBXCopyFilesBuildPhase section */
+		DE76ED170855FF7991BAA494 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolder = Product;
+			files = (
+				9F034EDC81D848BF21A522F4 /* ASRtestWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
 		};
-/* End PBXTargetDependency section */
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		F70000000000000000000001 /* Project.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/Project.xcconfig; sourceTree = "<group>"; };
 		000000000000000000000120 /* ASRtest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ASRtest.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		131579F23B3F04409C167FE4 /* WatchASRLog.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchASRLog.swift; sourceTree = "<group>"; };
+		13B4B4EE23F16914BA7A5C3D /* ASRtestWatchApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ASRtestWatchApp.swift; sourceTree = "<group>"; };
+		50EC0936BE74F343FA407998 /* ASRtestWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ASRtestWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6099596FAD3150B764132582 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		6319F5226CD33A63B4544052 /* ggml-tiny.bin */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = archive.macbinary; name = "ggml-tiny.bin"; path = "ModelLibrary/whisperTiny/ggml-tiny.bin"; sourceTree = "<group>"; };
+		92BB416A635D107C5ED66444 /* WatchWhisper.xcframework */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.xcframework; name = WatchWhisper.xcframework; path = WatchWhisperRuntime/WatchWhisper.xcframework; sourceTree = "<group>"; };
 		C10000000000000000000002 /* ModelLibrary */ = {isa = PBXFileReference; lastKnownFileType = folder; path = ModelLibrary; sourceTree = "<group>"; };
+		DF3DA7D116FEC288DF70DC93 /* WatchASRController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchASRController.swift; sourceTree = "<group>"; };
 		E60000000000000000000002 /* ASRtestUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASRtestUITests.swift; sourceTree = "<group>"; };
 		E60000000000000000000003 /* ASRtestUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ASRtestUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E8A4CA7898D6A3D07F82304E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		F2C51F66D4C83575800640AE /* WatchContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -57,9 +85,15 @@
 		};
 		E60000000000000000000006 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = ();
-			runOnlyForDeploymentPostprocessing = 0;
+			files = (
+			);
+		};
+		FD4DC86341DBF78F5BA4A453 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				B8F37DE65FE8D7CBAB301B3D /* Foundation.framework in Frameworks */,
+				FADC0196643B3C65394D9458 /* WatchWhisper.xcframework in Frameworks */,
+			);
 		};
 /* End PBXFrameworksBuildPhase section */
 
@@ -68,10 +102,13 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000010 /* ASRtest */,
-				F70000000000000000000001 /* Project.xcconfig */,
-				E60000000000000000000004 /* UITests */,
+				E60000000000000000000004 /* Tests/UITests */,
 				000000000000000000000020 /* Products */,
 				C10000000000000000000002 /* ModelLibrary */,
+				E52CC18ED81F5D91B9B77FB5 /* Frameworks */,
+				A98FDFE4A6483C9C256B5AE6 /* ASRtestWatch */,
+				4F39C9FAA3BC4CB1BCA0A95D /* Watch model */,
+				BAE804C3F4ECAE0F85235B72 /* Watch runtime */,
 			);
 			sourceTree = "<group>";
 		};
@@ -80,13 +117,60 @@
 			children = (
 				000000000000000000000120 /* ASRtest.app */,
 				E60000000000000000000003 /* ASRtestUITests.xctest */,
+				50EC0936BE74F343FA407998 /* ASRtestWatch.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		E60000000000000000000004 /* UITests */ = {
+		4F39C9FAA3BC4CB1BCA0A95D /* Watch model */ = {
 			isa = PBXGroup;
-			children = (E60000000000000000000002 /* ASRtestUITests.swift */);
+			children = (
+				6319F5226CD33A63B4544052 /* ggml-tiny.bin */,
+			);
+			name = "Watch model";
+			sourceTree = "<group>";
+		};
+		A98FDFE4A6483C9C256B5AE6 /* ASRtestWatch */ = {
+			isa = PBXGroup;
+			children = (
+				13B4B4EE23F16914BA7A5C3D /* ASRtestWatchApp.swift */,
+				F2C51F66D4C83575800640AE /* WatchContentView.swift */,
+				DF3DA7D116FEC288DF70DC93 /* WatchASRController.swift */,
+				131579F23B3F04409C167FE4 /* WatchASRLog.swift */,
+				6099596FAD3150B764132582 /* Assets.xcassets */,
+			);
+			path = ASRtestWatch;
+			sourceTree = "<group>";
+		};
+		BAE804C3F4ECAE0F85235B72 /* Watch runtime */ = {
+			isa = PBXGroup;
+			children = (
+				92BB416A635D107C5ED66444 /* WatchWhisper.xcframework */,
+			);
+			name = "Watch runtime";
+			sourceTree = "<group>";
+		};
+		DA51E55150C8CE25E1942B4A /* watchOS */ = {
+			isa = PBXGroup;
+			children = (
+				E8A4CA7898D6A3D07F82304E /* Foundation.framework */,
+			);
+			name = watchOS;
+			sourceTree = "<group>";
+		};
+		E52CC18ED81F5D91B9B77FB5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				DA51E55150C8CE25E1942B4A /* watchOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		E60000000000000000000004 /* Tests/UITests */ = {
+			isa = PBXGroup;
+			children = (
+				E60000000000000000000002 /* ASRtestUITests.swift */,
+			);
 			path = Tests/UITests;
 			sourceTree = "<group>";
 		};
@@ -100,8 +184,12 @@
 				000000000000000120000000 /* Sources */,
 				000000000000000130000000 /* Frameworks */,
 				000000000000000140000000 /* Resources */,
+				DE76ED170855FF7991BAA494 /* Embed Watch Content */,
 			);
 			buildRules = (
+			);
+			dependencies = (
+				A257061E3063C9CE008B2887 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				000000000000000000000010 /* ASRtest */,
@@ -115,12 +203,34 @@
 			productReference = 000000000000000000000120 /* ASRtest.app */;
 			productType = "com.apple.product-type.application";
 		};
+		244DCFED272608B0D33C283E /* ASRtestWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E16657D5964EA9B25845CB1D /* Build configuration list for PBXNativeTarget "ASRtestWatch" */;
+			buildPhases = (
+				6BC6EEB3D4D1ADEAEADC73A3 /* Sources */,
+				FD4DC86341DBF78F5BA4A453 /* Frameworks */,
+				95AAD2D8F57DA4215F26CBE9 /* Resources */,
+			);
+			buildRules = (
+			);
+			name = ASRtestWatch;
+			productName = ASRtestWatch;
+			productReference = 50EC0936BE74F343FA407998 /* ASRtestWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
 		E6000000000000000000000A /* ASRtestUITests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E6000000000000000000000D /* Build configuration list for PBXNativeTarget "ASRtestUITests" */;
-			buildPhases = (E60000000000000000000005 /* Sources */, E60000000000000000000006 /* Frameworks */, E60000000000000000000007 /* Resources */);
-			buildRules = ();
-			dependencies = (E60000000000000000000009 /* PBXTargetDependency */);
+			buildPhases = (
+				E60000000000000000000005 /* Sources */,
+				E60000000000000000000006 /* Frameworks */,
+				E60000000000000000000007 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E60000000000000000000009 /* PBXTargetDependency */,
+			);
 			name = ASRtestUITests;
 			productName = ASRtestUITests;
 			productReference = E60000000000000000000003 /* ASRtestUITests.xctest */;
@@ -136,12 +246,12 @@
 				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 2710;
 				TargetAttributes = {
+					000000000000000100000000 = {
+						CreatedOnToolsVersion = 26.3;
+					};
 					E6000000000000000000000A = {
 						CreatedOnToolsVersion = 27.1;
 						TestTargetID = 000000000000000100000000;
-					};
-					000000000000000100000000 = {
-						CreatedOnToolsVersion = 26.3;
 					};
 				};
 			};
@@ -165,6 +275,7 @@
 			targets = (
 				000000000000000100000000 /* ASRtest */,
 				E6000000000000000000000A /* ASRtestUITests */,
+				244DCFED272608B0D33C283E /* ASRtestWatch */,
 			);
 		};
 /* End PBXProject section */
@@ -176,11 +287,17 @@
 				C10000000000000000000001 /* ModelLibrary in Resources */,
 			);
 		};
+		95AAD2D8F57DA4215F26CBE9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+				BE76EB8FAA031E54109687EA /* ggml-tiny.bin in Resources */,
+				076143680DC80F1CD1A1C2A2 /* Assets.xcassets in Resources */,
+			);
+		};
 		E60000000000000000000007 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = ();
-			runOnlyForDeploymentPostprocessing = 0;
+			files = (
+			);
 		};
 /* End PBXResourcesBuildPhase section */
 
@@ -190,18 +307,39 @@
 			files = (
 			);
 		};
+		6BC6EEB3D4D1ADEAEADC73A3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				D2A1FD75067661178561FFA7 /* ASRtestWatchApp.swift in Sources */,
+				0F9D9C0ED9160E3BF6F60D2F /* WatchContentView.swift in Sources */,
+				10F997BBD91DC822A42DD831 /* WatchASRController.swift in Sources */,
+				D85DB277DCF9EF44FBF27791 /* WatchASRLog.swift in Sources */,
+			);
+		};
 		E60000000000000000000005 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (E60000000000000000000001 /* ASRtestUITests.swift in Sources */,);
-			runOnlyForDeploymentPostprocessing = 0;
+			files = (
+				E60000000000000000000001 /* ASRtestUITests.swift in Sources */,
+			);
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A257061E3063C9CE008B2887 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 244DCFED272608B0D33C283E /* ASRtestWatch */;
+			targetProxy = A257061D3063C9CE008B2887 /* PBXContainerItemProxy */;
+		};
+		E60000000000000000000009 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 000000000000000100000000 /* ASRtest */;
+			targetProxy = E60000000000000000000008 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		000000000000000011000000 /* Debug configuration for PBXProject "ASRtest" */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F70000000000000000000001 /* Project.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -272,7 +410,6 @@
 		};
 		000000000000000012000000 /* Release configuration for PBXProject "ASRtest" */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F70000000000000000000001 /* Project.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -340,7 +477,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "$(ASR_DEVELOPMENT_TEAM)";
+				DEVELOPMENT_TEAM = KK725BAG6L;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -367,8 +504,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(ASR_APP_BUNDLE_IDENTIFIER)";
+				MARKETING_VERSION = 2.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.roylyl.asrtest.ios.f52d86a9;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = iphoneos;
@@ -390,7 +527,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "$(ASR_DEVELOPMENT_TEAM)";
+				DEVELOPMENT_TEAM = KK725BAG6L;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -417,8 +554,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(ASR_APP_BUNDLE_IDENTIFIER)";
+				MARKETING_VERSION = 2.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.roylyl.asrtest.ios.f52d86a9;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = iphoneos;
@@ -433,17 +570,87 @@
 			};
 			name = Release;
 		};
-		E6000000000000000000000B /* Debug configuration for ASRtestUITests */ = {
+		B40DCD8C1C7BE3428A92181F /* Debug configuration for PBXNativeTarget "ASRtestWatch" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KK725BAG6L;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = ASRtest;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "在 Apple Watch 上录音，并在手表本地使用 Whisper tiny 完成语音转写。";
+				INFOPLIST_KEY_WKApplication = YES;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.roylyl.asrtest.ios.f52d86a9;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.0.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lc++",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.roylyl.asrtest.ios.f52d86a9.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		D9F8743D11E9542DDDBFC872 /* Release configuration for PBXNativeTarget "ASRtestWatch" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KK725BAG6L;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = ASRtest;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "在 Apple Watch 上录音，并在手表本地使用 Whisper tiny 完成语音转写。";
+				INFOPLIST_KEY_WKApplication = YES;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.roylyl.asrtest.ios.f52d86a9;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.0.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lc++",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.roylyl.asrtest.ios.f52d86a9.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		E6000000000000000000000B /* Debug configuration for PBXNativeTarget "ASRtestUITests" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = arm64;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "$(ASR_DEVELOPMENT_TEAM)";
+				DEVELOPMENT_TEAM = KK725BAG6L;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(ASR_APP_BUNDLE_IDENTIFIER).uitests";
+				MARKETING_VERSION = 2.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.roylyl.asrtest.ui-tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -454,17 +661,17 @@
 			};
 			name = Debug;
 		};
-		E6000000000000000000000C /* Release configuration for ASRtestUITests */ = {
+		E6000000000000000000000C /* Release configuration for PBXNativeTarget "ASRtestUITests" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = arm64;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "$(ASR_DEVELOPMENT_TEAM)";
+				DEVELOPMENT_TEAM = KK725BAG6L;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(ASR_APP_BUNDLE_IDENTIFIER).uitests";
+				MARKETING_VERSION = 2.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.roylyl.asrtest.ui-tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -494,9 +701,20 @@
 			);
 			defaultConfigurationName = Release;
 		};
-		E6000000000000000000000D /* Build configuration list for ASRtestUITests */ = {
+		E16657D5964EA9B25845CB1D /* Build configuration list for PBXNativeTarget "ASRtestWatch" */ = {
 			isa = XCConfigurationList;
-			buildConfigurations = (E6000000000000000000000B /* Debug */, E6000000000000000000000C /* Release */);
+			buildConfigurations = (
+				D9F8743D11E9542DDDBFC872 /* Release configuration for PBXNativeTarget "ASRtestWatch" */,
+				B40DCD8C1C7BE3428A92181F /* Debug configuration for PBXNativeTarget "ASRtestWatch" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		E6000000000000000000000D /* Build configuration list for PBXNativeTarget "ASRtestUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E6000000000000000000000B /* Debug configuration for PBXNativeTarget "ASRtestUITests" */,
+				E6000000000000000000000C /* Release configuration for PBXNativeTarget "ASRtestUITests" */,
+			);
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */

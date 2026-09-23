@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Adapt only the pinned official CLI's native inference core; leave vendor pristine."""
 from pathlib import Path
-import json
+import subprocess
 import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -10,8 +10,7 @@ OUT = ROOT / "Packages/NanoRuntime/Sources/CNano"
 REV = "0339018ba74a7defa3b6b6a96718d17b816be77b"
 LLAMA_REV = "8086439a4cea94c71a5dfb8fe4ad1546aebd640f"
 for path, rev in [(VENDOR, REV), (VENDOR / "third_party/llama.cpp", LLAMA_REV)]:
-    marker = path / ".asrtest-upstream.json"
-    if not marker.is_file() or json.loads(marker.read_text()).get("commit") != rev:
+    if subprocess.check_output(["git", "-C", str(path), "rev-parse", "HEAD"], text=True).strip() != rev:
         raise SystemExit(f"Unexpected source revision at {path}")
 
 s = (VENDOR / "runtime/llama.cpp/funasr-cli/funasr-cli.cpp").read_text()
@@ -71,7 +70,7 @@ replace('gguf_free(g); return true;', '''gguf_free(g);
         m.c.kernel!=11 || m.c.adp_llm!=1024 || m.c.adp_layers!=2 || m.c.adp_head!=8)
         throw std::runtime_error("Unsupported Nano encoder architecture");
     return true;''')
-s = '// SPDX-License-Identifier: Apache-2.0\n// Adapted from Apache-2.0 QwenAudio/Fun-ASR at ' + REV + '\n' + s
+s = '// Adapted from Apache-2.0 QwenAudio/Fun-ASR at ' + REV + '\n' + s
 s += '\n#include "nano_api.inc"\n'
 if not (OUT / "nano_core.cpp").exists() or (OUT / "nano_core.cpp").read_text() != s:
     (OUT / "nano_core.cpp").write_text(s)

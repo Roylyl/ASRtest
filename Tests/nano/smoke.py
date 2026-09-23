@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """Exercise the same C ABI on macOS; does not substitute for iPhone validation."""
 from pathlib import Path
-import argparse
 import ctypes as C
 import json
-import os
 import resource
 import struct
 import threading
@@ -12,16 +10,8 @@ import time
 import wave
 
 ROOT = Path(__file__).resolve().parents[2]
-parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument("--library", default=os.environ.get("ASR_NANO_MACOS_LIBRARY", str(ROOT / "Packages/NanoRuntime/.build-native/macosx/Release/CNano.framework/CNano")), help="macOS CNano library (the iOS XCFramework cannot run in a macOS process)")
-args = parser.parse_args()
-FRAMEWORK = Path(args.library)
+FRAMEWORK = ROOT / "Packages/NanoRuntime/.build-native/macosx/Release/CNano.framework/CNano"
 MODEL = ROOT / "ModelLibrary/nano"
-SAMPLE = Path(os.environ.get("ASR_NANO_SAMPLE", ROOT / "Vendor/Fun-ASR/runtime/llama.cpp/tests/sample.wav"))
-if not FRAMEWORK.is_file():
-    raise SystemExit("Build the optional macOS runtime with: python3 Scripts/build-nano.py --macos-only; or set ASR_NANO_MACOS_LIBRARY / --library")
-if not SAMPLE.is_file():
-    raise SystemExit("Missing official Nano sample; verify the vendored source snapshot, or set ASR_NANO_SAMPLE to the same official sample")
 lib = C.CDLL(str(FRAMEWORK))
 cancel_type = C.CFUNCTYPE(C.c_int32, C.c_void_p)
 cancelled = threading.Event()
@@ -42,7 +32,7 @@ handle = lib.asr_nano_open(str(MODEL / "funasr-encoder-f16.gguf").encode(), str(
 assert handle, error.value.decode()
 report = {"platform": "macOS arm64 (same C ABI; not an iPhone test)", "load_seconds": time.monotonic() - begin, "checks": {}}
 try:
-    with wave.open(str(SAMPLE)) as wav:
+    with wave.open(str(ROOT / "Vendor/Fun-ASR/runtime/llama.cpp/tests/sample.wav")) as wav:
         assert (wav.getframerate(), wav.getnchannels(), wav.getsampwidth()) == (16000, 1, 2)
         frames = wav.readframes(wav.getnframes())
         values = [v / 32768 for (v,) in struct.iter_unpack("<h", frames)]

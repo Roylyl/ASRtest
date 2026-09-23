@@ -1,5 +1,12 @@
-// SPDX-License-Identifier: Apache-2.0
 import Foundation
+
+struct BatchRecordLink: Codable, Sendable {
+    let groupID: String
+    let itemID: String
+    let index: Int
+    let total: Int
+    let filename: String
+}
 
 struct SessionRecord: Codable, Identifiable, Sendable {
     var schemaVersion = 1
@@ -8,7 +15,7 @@ struct SessionRecord: Codable, Identifiable, Sendable {
     var modelID: ModelID
     var modelName: String
     var framework: String
-    var appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0"
+    var appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "2.0.0"
     var options: RecognitionOptions
     var device: String
     var input: String
@@ -25,6 +32,8 @@ struct SessionRecord: Codable, Identifiable, Sendable {
     var state = "未完成"
     var reason = ""
     var error: String?
+    // Optional so records written by ASRtest 1.0.0 remain decodable.
+    var batch: BatchRecordLink?
     var metricDefinition = "流式：接收/解码/取结果及结束调用；非流式：结束转写调用。均不含采集、重采样、界面或日志，不是严格模型RTF。"
 }
 struct SessionStore {

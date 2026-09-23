@@ -134,4 +134,113 @@ final class ASRtestUITests: XCTestCase {
         XCTAssertFalse(app.buttons["test.stop"].isEnabled)
         app.terminate()
     }
+
+    @MainActor
+    func testIPadWideLayoutAndBatchEntry() {
+        let app = XCUIApplication()
+        app.launch()
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let allow = springboard.alerts.buttons["允许"]
+        if allow.waitForExistence(timeout: 5) { allow.tap() }
+        let selector = app.buttons["test.modelSelector"]
+        XCTAssertTrue(selector.waitForExistence(timeout: 45))
+        let transcript = app.descendants(matching: .any)["test.transcript"].firstMatch
+        XCTAssertTrue(transcript.waitForExistence(timeout: 10))
+        XCTAssertGreaterThan(transcript.frame.minX, selector.frame.maxX,
+                             "Wide iPad layout should place results to the right of controls")
+        XCTAssertTrue(app.staticTexts["批量 WAV 测试"].exists)
+        XCTAssertTrue(app.buttons["选择 WAV"].exists)
+        capture("ipad-batch-layout", app: app)
+    }
+
+    @MainActor
+    func testBatchWAVProcessingAndGroupDetails() {
+        let app = XCUIApplication()
+        app.launchArguments = ["ASRTEST_BATCH_SMOKE"]
+        app.launch()
+        let status = app.staticTexts["test.status"]
+        XCTAssertTrue(status.waitForExistence(timeout: 45))
+        expectation(for: NSPredicate(format: "label == %@", "批量测试完成"), evaluatedWith: status)
+        waitForExpectations(timeout: 90)
+        let library = app.buttons["tab.library"].firstMatch
+        XCTAssertTrue(library.waitForExistence(timeout: 10))
+        library.tap()
+        XCTAssertTrue(app.staticTexts["批量测试"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "2/2 完成")).firstMatch.waitForExistence(timeout: 10))
+        capture("ipad-batch-completed", app: app)
+        app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Zipformer Small")).firstMatch.tap()
+        XCTAssertTrue(app.staticTexts["batch-a.wav"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["batch-b.wav"].exists)
+        capture("ipad-batch-details", app: app)
+    }
+
+    @MainActor
+    func testBatchContinuesAfterInvalidWAV() {
+        let app = XCUIApplication()
+        app.launchArguments = ["ASRTEST_BATCH_FAILURE_SMOKE"]
+        app.launch()
+        let status = app.staticTexts["test.status"]
+        XCTAssertTrue(status.waitForExistence(timeout: 45))
+        expectation(for: NSPredicate(format: "label == %@", "批量测试完成"), evaluatedWith: status)
+        waitForExpectations(timeout: 90)
+        app.buttons["tab.library"].firstMatch.tap()
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "2/3 完成 · 1 失败")).firstMatch.waitForExistence(timeout: 10))
+        capture("ipad-batch-invalid-continues", app: app)
+    }
+
+    @MainActor
+    func testBatchCanBeStopped() {
+        let app = XCUIApplication()
+        app.launchArguments = ["ASRTEST_BATCH_STOP_SMOKE"]
+        app.launch()
+        let selector = app.buttons["test.modelSelector"]
+        XCTAssertTrue(selector.waitForExistence(timeout: 45))
+        selector.tap()
+        let zipformer = app.buttons["model.zipformer"]
+        XCTAssertTrue(zipformer.waitForExistence(timeout: 10))
+        zipformer.tap()
+        expectation(for: NSPredicate(format: "enabled == true AND label CONTAINS %@", "Zipformer"), evaluatedWith: selector)
+        waitForExpectations(timeout: 90)
+        let start = app.buttons["开始本轮"]
+        XCTAssertTrue(start.waitForExistence(timeout: 45))
+        expectation(for: NSPredicate(format: "enabled == true"), evaluatedWith: start)
+        waitForExpectations(timeout: 45)
+        start.tap()
+        let stop = app.buttons["停止批量测试"]
+        XCTAssertTrue(stop.waitForExistence(timeout: 45))
+        stop.tap()
+        let status = app.staticTexts["test.status"]
+        expectation(for: NSPredicate(format: "label == %@", "批量测试已停止"), evaluatedWith: status)
+        waitForExpectations(timeout: 90)
+        capture("ipad-batch-stopped", app: app)
+    }
+
+    @MainActor
+    func testBatchCanRerunWithAnotherModel() {
+        let app = XCUIApplication()
+        app.launchArguments = ["ASRTEST_BATCH_SMOKE"]
+        app.launch()
+        let status = app.staticTexts["test.status"]
+        XCTAssertTrue(status.waitForExistence(timeout: 45))
+        expectation(for: NSPredicate(format: "label == %@", "批量测试完成"), evaluatedWith: status)
+        waitForExpectations(timeout: 90)
+
+        let selector = app.buttons["test.modelSelector"]
+        XCTAssertTrue(selector.waitForExistence(timeout: 10))
+        selector.tap()
+        let tiny = app.buttons["model.whisperTiny"]
+        XCTAssertTrue(tiny.waitForExistence(timeout: 10))
+        tiny.tap()
+        expectation(for: NSPredicate(format: "enabled == true AND label CONTAINS %@", "Whisper tiny"), evaluatedWith: selector)
+        waitForExpectations(timeout: 90)
+        let rerun = app.buttons["开始本轮"]
+        XCTAssertTrue(rerun.waitForExistence(timeout: 10))
+        rerun.tap()
+        expectation(for: NSPredicate(format: "label == %@", "批量测试完成"), evaluatedWith: status)
+        waitForExpectations(timeout: 90)
+        app.buttons["tab.library"].firstMatch.tap()
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "Whisper tiny")).firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "Zipformer Small")).firstMatch.exists)
+        capture("ipad-batch-two-model-rounds", app: app)
+    }
 }

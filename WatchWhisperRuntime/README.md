@@ -1,0 +1,7 @@
+# Watch Whisper runtime
+
+`WatchWhisper.xcframework` is a watchOS-only CPU build of vendored whisper.cpp commit `927cfce34f31707e17f2bff35c349632fb9e2c3a` (`../Vendor/whisper.cpp`, MIT). It contains watchOS arm64 and arm64_32 device slices and arm64/x86_64 watchOS Simulator slices. The small C bridge exposes model loading and final transcription; it does not stream partial text. The Watch target includes only the existing multilingual `ModelLibrary/whisperTiny/ggml-tiny.bin` (SHA256 `be07e048e1e599ad46341c8d2a135645097a538221678b7acdd1b1919c6e1b21`). The model comes from the pinned ggerganov/whisper.cpp Hugging Face revision in `ModelsManifest.json`; its model card marks it MIT.
+
+Build settings: CMake/Ninja, static libraries, no Metal, Accelerate, BLAS, OpenMP, or CoreML, generic GGML CPU implementation, watchOS minimum 10.0, `-D_DARWIN_C_SOURCE` to restore Darwin BSD type definitions hidden by GGML's XOPEN feature macro. Link the merged static library with libc++. `build.sh` recreates the XCFramework from the included source. A successful build does not establish usable latency or memory use on physical Apple Watch.
+
+The watchOS Simulator Debug self-check (`ASRTEST_WATCH_SMOKE`) completed one local `whisper_full` call on 2 seconds of silence. Physical Apple Watch microphone and transcription remain unverified. The Watch UI labels this model as experimental; Release recording is disabled until device validation is complete.

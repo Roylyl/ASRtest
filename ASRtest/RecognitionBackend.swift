@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
 import Foundation
 import AVFoundation
 
@@ -30,6 +29,7 @@ final class RecognitionBackend: @unchecked Sendable {
     private let outputFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 16000, channels: 1, interleaved: false)!
     private var snapshot = RecognitionSnapshot()
     private var record: SessionRecord?
+    var currentRecordID: String? { checkQueue(); return active ? record?.id : nil }
     private var writer: FileHandle?
     private var startTime = 0.0
     private var loadMS = 0.0
@@ -66,7 +66,7 @@ final class RecognitionBackend: @unchecked Sendable {
         return loadMS
     }
     func unload() { checkQueue(); guard !active else { return }; engine?.unload(); engine = nil }
-    func begin(rate: Double, device: String, input: String, inputUID: String) throws {
+    @discardableResult func begin(rate: Double, device: String, input: String, inputUID: String, batch: BatchRecordLink? = nil) throws -> String {
         checkQueue()
         guard let engine, !active else { throw ASRError.message("识别引擎尚未就绪。") }
         snapshot = RecognitionSnapshot(); acceptedFrames = 0
@@ -75,6 +75,7 @@ final class RecognitionBackend: @unchecked Sendable {
         record = SessionRecord(modelID: selectedModel, modelName: selectedModel.title, framework: selectedModel.framework,
             options: options, device: device, input: input, inputUID: inputUID, hardwareSampleRate: rate,
             modelRevision: asset?.revision, modelFiles: asset?.files ?? [], loadMS: loadMS)
+        record?.batch = batch
         active = true
         if let record {
             try SessionStore.save(record)
@@ -91,6 +92,7 @@ final class RecognitionBackend: @unchecked Sendable {
         guard let inputFormat, let conversion = AVAudioConverter(from: inputFormat, to: outputFormat) else { throw ASRError.message("无法转换输入音频。") }
         converter = conversion
         try engine.begin()
+        return record!.id
     }
     func markCaptureStart(_ time: Double) { checkQueue(); startTime = time }
     func consume(_ mono: [Float]) throws {

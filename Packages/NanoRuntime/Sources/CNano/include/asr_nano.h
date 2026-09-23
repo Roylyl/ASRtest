@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
 #ifndef ASR_NANO_H
 #define ASR_NANO_H
 #include <stddef.h>

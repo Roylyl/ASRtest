@@ -1,24 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-if [[ "${1:-}" == --help ]]; then
-    cat <<'HELP'
-Usage: bash Scripts/run-ui-smoke.sh
-Runs only on an iOS simulator. By default, exactly one iOS simulator must be booted.
-ASR_UI_SIMULATOR: explicitly select an available simulator UDID (boots it if needed).
-ASR_UI_DERIVED_DATA: defaults to <repository>/.build/ui-derived.
-ASR_UI_SOURCE_PACKAGES: defaults to <repository>/.build/SourcePackages.
-The test switches local models and captures UI screenshots; it does not record audio.
-HELP
-    exit 0
-fi
-if [[ -n "${ASR_UI_SIMULATOR:-}" ]]; then
-    SIMULATOR="$(python3 "$ROOT/Scripts/select-ios-simulator.py" --udid "$ASR_UI_SIMULATOR")"
-else
-    SIMULATOR="$(python3 "$ROOT/Scripts/select-ios-simulator.py")"
-fi
-DERIVED="${ASR_UI_DERIVED_DATA:-$ROOT/.build/ui-derived}"
-PACKAGES="${ASR_UI_SOURCE_PACKAGES:-$ROOT/.build/SourcePackages}"
+SIMULATOR="${ASR_UI_SIMULATOR:-A2BE9010-4447-4DA5-971A-A76721DE2BF7}"
+DERIVED="${ASR_UI_DERIVED_DATA:-/Users/roylyl/Documents/ChatGPT/ln/android-validation/asrtest-unified-ui}"
+PACKAGES="${ASR_UI_SOURCE_PACKAGES:-/Users/roylyl/Documents/ChatGPT/ln/android-validation/ios-build/SourcePackages}"
 RUN_ID="$(date +%Y%m%d-%H%M%S)"
 OUT="$ROOT/Tests/UITests/Artifacts/$RUN_ID"
 mkdir -p "$OUT" "$ROOT/Preview"

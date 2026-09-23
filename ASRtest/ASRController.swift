@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
 import Foundation
 import AVFoundation
 import Combine
@@ -149,20 +148,121 @@ private final class CapturePipeline: @unchecked Sendable {
         catch { message = message ?? "音频会话关闭失败：\(error.localizedDescription)" }
         return backend.finish(reason: reason, failure: message, stopTime: stopTime)
     }
+    func runBatch(_ selection: BatchImportSelection, model: ModelID, options: RecognitionOptions,
+                  ticket: CaptureTicket,
+                  group initial: BatchLogGroup,
+                  progress: @escaping @Sendable (BatchLogGroup, RecognitionSnapshot) -> Void) -> BatchLogGroup {
+        checkQueue()
+        var group = initial
+        do { try BatchLogStore.save(group) }
+        catch { group.close(stopped: true, reason: "无法保存批次：\(error.localizedDescription)"); return group }
+        for index in selection.files.indices {
+            guard ticket.ifActive({ cancellation.reset() }) else { break }
+            let source = selection.files[index]
+            group.items[index].status = .reading
+            try? BatchLogStore.save(group)
+            progress(group, RecognitionSnapshot())
+            guard let url = source.localURL else {
+                group.items[index].status = .failed
+                group.items[index].error = source.importError ?? "导入失败"
+                try? BatchLogStore.save(group); progress(group, RecognitionSnapshot(error: group.items[index].error))
+                continue
+            }
+            var begun = false
+            do {
+                let file = try AVAudioFile(forReading: url)
+                let format = file.processingFormat
+                guard format.sampleRate > 0, format.channelCount > 0,
+                      format.commonFormat == .pcmFormatFloat32, !format.isInterleaved else {
+                    throw ASRError.message("WAV 解码格式不支持。")
+                }
+                let duration = Double(file.length) / format.sampleRate
+                guard duration <= model.maximumSeconds else {
+                    throw ASRError.message("音频为 \(String(format: "%.1f", duration)) 秒，超过此模型 \(Int(model.maximumSeconds)) 秒上限。")
+                }
+                let link = BatchRecordLink(groupID: group.id, itemID: source.id,
+                                           index: index + 1, total: selection.files.count, filename: source.filename)
+                begun = true
+                let recordID = try backend.begin(rate: format.sampleRate,
+                    device: "iOS 批量文件测试", input: source.filename, inputUID: "batch-file", batch: link)
+                group.items[index].recordID = recordID
+                group.items[index].status = .recognizing
+                try BatchLogStore.save(group)
+                let displayGroup = group
+                backend.onUpdate = { value in progress(displayGroup, value) }
+                progress(group, RecognitionSnapshot())
+                backend.markCaptureStart(ProcessInfo.processInfo.systemUptime)
+                let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: 4096)!
+                while ticket.ifActive({}) && !cancellation.isCancelled {
+                    let remaining = file.length - file.framePosition
+                    if remaining <= 0 { break }
+                    try file.read(into: buffer, frameCount: AVAudioFrameCount(min(4096, remaining)))
+                    if buffer.frameLength == 0 { break }
+                    guard let channels = buffer.floatChannelData else { throw ASRError.message("无法读取 WAV 音频数据。") }
+                    let count = Int(buffer.frameLength), channelCount = Int(format.channelCount)
+                    var mono = [Float](repeating: 0, count: count)
+                    for channel in 0..<channelCount {
+                        for sample in 0..<count { mono[sample] += channels[channel][sample] / Float(channelCount) }
+                    }
+                    try backend.consume(mono)
+                    #if DEBUG
+                    if ProcessInfo.processInfo.arguments.contains("ASRTEST_BATCH_STOP_SMOKE") {
+                        Thread.sleep(forTimeInterval: 0.01)
+                    }
+                    #endif
+                }
+                let stopped = !ticket.ifActive({})
+                let result = backend.finish(reason: stopped ? "user_cancel" : "file_test", failure: nil)
+                begun = false
+                group.items[index].status = stopped ? .stopped : (result.error == nil ? .completed : .failed)
+                group.items[index].error = result.error
+                group.items[index].audioSeconds = result.audioSeconds
+                group.items[index].inferenceMS = result.acceptMS + result.decodeMS
+                try BatchLogStore.save(group)
+                progress(group, result)
+            } catch {
+                let stopped = !ticket.ifActive({})
+                if begun {
+                    if group.items[index].recordID == nil { group.items[index].recordID = backend.currentRecordID }
+                    let result = backend.finish(reason: stopped ? "user_cancel" : "error",
+                                                failure: stopped ? nil : error.localizedDescription)
+                    group.items[index].audioSeconds = result.audioSeconds
+                    group.items[index].inferenceMS = result.acceptMS + result.decodeMS
+                }
+                group.items[index].status = stopped ? .stopped : .failed
+                group.items[index].error = stopped ? "用户主动停止" : error.localizedDescription
+                try? BatchLogStore.save(group)
+                progress(group, RecognitionSnapshot(error: group.items[index].error))
+            }
+        }
+        let stopped = !ticket.ifActive({})
+        group.close(stopped: stopped, reason: stopped ? "用户主动停止" : nil)
+        try? BatchLogStore.save(group)
+        return group
+    }
 }
 
 @MainActor
 final class ASRController: ObservableObject {
-    enum Phase { case loading, ready, authorizing, preparing, recording, stopping, failed }
+    enum Phase { case loading, ready, authorizing, preparing, recording, stopping, batch, failed }
     struct InputSource: Identifiable { let id: String; let name: String }
     @Published private(set) var selectedModel: ModelID = .zipformer
     @Published private(set) var selectedLanguage = "auto"
     @Published private(set) var options = RecognitionOptions()
     @Published private(set) var availableModels: Set<ModelID> = []
     @Published private(set) var records: [SessionRecord] = []
+    @Published private(set) var batchGroups: [BatchLogGroup] = []
+    @Published private(set) var watchLogs: [WatchASRLog] = []
+    @Published private(set) var activeBatch: BatchLogGroup?
+    @Published private(set) var batchSelection: BatchImportSelection?
+    @Published private(set) var batchMessage = "可多选 WAV，逐文件离线识别。"
+    @Published private(set) var batchImporting = false
     @Published private(set) var historyError: String?
+    @Published private(set) var historyBusy = false
+    @Published private(set) var exportURL: URL?
+    private var historyGeneration = 0
     private var hasChosenInput = false
-    var canConfigureModel: Bool { (phase == .ready || phase == .failed) && !refreshingInputs && !interrupted }
+    var canConfigureModel: Bool { (phase == .ready || phase == .failed) && !refreshingInputs && !interrupted && !historyBusy }
     @Published private(set) var phase: Phase = .loading
     @Published private(set) var status = "正在加载本地模型"
     @Published private(set) var loadMS = 0.0
@@ -173,6 +273,8 @@ final class ASRController: ObservableObject {
     @Published private(set) var inputMessage = "输入设备会自动更新，也可点击刷新。"
     @Published private(set) var refreshingInputs = false
     private let pipeline = CapturePipeline()
+    private let historyQueue = DispatchQueue(label: "ASRtest.history", qos: .utility)
+    private let watchInbox = WatchLogInbox()
     private var ticket: CaptureTicket?
     private var token: UUID?
     private var observers: [NSObjectProtocol] = []
@@ -180,11 +282,27 @@ final class ASRController: ObservableObject {
     private var pendingRefresh = false
     private var interrupted = false
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
-    var canStart: Bool { phase == .ready && !refreshingInputs && !interrupted }
+    var canStart: Bool { phase == .ready && !refreshingInputs && !interrupted && !historyBusy }
     var canStop: Bool { phase == .recording || phase == .preparing }
+    var canBatch: Bool { canStart && !batchImporting && batchSelection != nil }
 
     init() {
+        watchInbox.received = { [weak self] staged, expectedID, receipt in
+            guard let self else { try? FileManager.default.removeItem(at: staged); return }
+            self.historyQueue.async { [weak self] in
+                defer { try? FileManager.default.removeItem(at: staged) }
+                do {
+                    let id = try WatchASRLogStore.importFile(staged, expectedID: expectedID)
+                    receipt(id)
+                    let logs = WatchASRLogStore.all()
+                    Task { @MainActor [weak self] in self?.watchLogs = logs }
+                } catch {
+                    Task { @MainActor [weak self] in self?.historyError = "手表日志接收失败：\(error.localizedDescription)" }
+                }
+            }
+        }
         availableModels = Set(ModelID.allCases.filter { ModelStore().installedURL($0) != nil })
+        historyQueue.async { try? BatchLogStore.recoverInterrupted() }
         reloadHistory()
         let initial = ModelID(rawValue: UserDefaults.standard.string(forKey: "selectedModel") ?? "") ?? .zipformer
         selectedModel = initial
@@ -198,7 +316,15 @@ final class ASRController: ObservableObject {
                 let time = try pipeline.backend.load(model: initial, options: settings)
                 Task { @MainActor [weak self] in
                     self?.loadMS = time; self?.phase = .ready; self?.status = "模型就绪"
+                    #if DEBUG
+                    if ProcessInfo.processInfo.arguments.contains("ASRTEST_BATCH_SMOKE") ||
+                        ProcessInfo.processInfo.arguments.contains("ASRTEST_BATCH_FAILURE_SMOKE") ||
+                        ProcessInfo.processInfo.arguments.contains("ASRTEST_BATCH_STOP_SMOKE") {
+                        self?.runBatchSmoke()
+                    } else { self?.refreshInputsAutomatically() }
+                    #else
                     self?.refreshInputsAutomatically()
+                    #endif
                 }
             } catch {
                 Task { @MainActor [weak self] in self?.phase = .failed; self?.status = error.localizedDescription }
@@ -354,19 +480,167 @@ final class ASRController: ObservableObject {
         options.useITN = value; saveOptions(); loadSelectedModel()
     }
     private func saveOptions() { if let data = try? JSONEncoder().encode(options) { UserDefaults.standard.set(data, forKey: "options") } }
+    func importBatch(_ urls: [URL]) {
+        guard canStart, !batchImporting else { return }
+        batchImporting = true; batchMessage = "正在暂存音频文件"
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let result = Result { try BatchImport.stage(urls) }
+            Task { @MainActor [weak self] in
+                guard let self else {
+                    if case .success(let selection) = result { BatchImport.remove(selection) }
+                    return
+                }
+                self.batchImporting = false
+                switch result {
+                case .success(let selection):
+                    BatchImport.remove(self.batchSelection)
+                    self.batchSelection = selection
+                    self.batchMessage = "已选择 \(selection.files.count) 个 WAV；导入失败的文件会在本轮标记失败。"
+                    #if DEBUG
+                    if ProcessInfo.processInfo.arguments.contains("ASRTEST_BATCH_SMOKE") ||
+                        ProcessInfo.processInfo.arguments.contains("ASRTEST_BATCH_FAILURE_SMOKE") { self.startBatch() }
+                    #endif
+                case .failure(let error): self.batchMessage = error.localizedDescription
+                }
+            }
+        }
+    }
+    func reportBatchImportError(_ message: String) { batchMessage = message }
+    #if DEBUG
+    private func runBatchSmoke() {
+        do {
+            let folder = FileManager.default.temporaryDirectory.appendingPathComponent("ASRtest-smoke-\(UUID().uuidString)")
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            func wav(_ name: String, seconds: Int) throws -> URL {
+                let bytes = seconds * 16000 * 2
+                var data = Data()
+                func put16(_ value: UInt16) {
+                    var little = value.littleEndian
+                    withUnsafeBytes(of: &little) { data.append(contentsOf: $0) }
+                }
+                func put32(_ value: UInt32) {
+                    var little = value.littleEndian
+                    withUnsafeBytes(of: &little) { data.append(contentsOf: $0) }
+                }
+                data.append(contentsOf: Array("RIFF".utf8))
+                put32(UInt32(36 + bytes))
+                data.append(contentsOf: Array("WAVEfmt ".utf8))
+                put32(16); put16(1); put16(1)
+                put32(16000); put32(32000); put16(2); put16(16)
+                data.append(contentsOf: Array("data".utf8))
+                put32(UInt32(bytes))
+                data.append(contentsOf: [UInt8](repeating: 0, count: bytes))
+                let url = folder.appendingPathComponent(name)
+                try data.write(to: url, options: .atomic)
+                return url
+            }
+            let stopping = ProcessInfo.processInfo.arguments.contains("ASRTEST_BATCH_STOP_SMOKE")
+            let first = try wav("batch-a.wav", seconds: stopping ? 300 : 1)
+            let last = try wav("batch-b.wav", seconds: 2)
+            if ProcessInfo.processInfo.arguments.contains("ASRTEST_BATCH_FAILURE_SMOKE") {
+                let invalid = folder.appendingPathComponent("batch-aa-invalid.wav")
+                try Data("not a WAV file".utf8).write(to: invalid)
+                importBatch([first, invalid, last])
+            } else { importBatch([first, last]) }
+        } catch { batchMessage = "批量自检音频创建失败：\(error.localizedDescription)" }
+    }
+    #endif
+    func startBatch() {
+        guard canBatch, let selection = batchSelection else { return }
+        let model = selectedModel, settings = options, id = UUID()
+        let group = BatchLogGroup(name: "\(model.title) · \(Date().formatted(date: .abbreviated, time: .shortened))",
+            model: model, options: settings,
+            items: selection.files.map { BatchLogItem(id: $0.id, filename: $0.filename) })
+        token = id; phase = .batch; activeBatch = group; result = RecognitionSnapshot()
+        status = "批量测试 0/\(group.items.count)"; batchMessage = "本轮固定模型和识别设置"
+        pipeline.cancellation.reset()
+        let batchTicket = CaptureTicket(); ticket = batchTicket
+        let pipeline = pipeline
+        pipeline.queue.async { [self] in
+            let completed = pipeline.runBatch(selection, model: model, options: settings, ticket: batchTicket, group: group) { value, snapshot in
+                Task { @MainActor [self] in
+                    guard self.token == id else { return }
+                    self.activeBatch = value; self.result = snapshot
+                    self.status = "批量测试 \(value.finishedCount)/\(value.items.count)"
+                }
+            }
+            Task { @MainActor [self] in
+                guard self.token == id else { return }
+                self.activeBatch = completed
+                self.phase = .ready; self.token = nil; self.ticket = nil
+                self.status = completed.status == "已停止" ? "批量测试已停止" : "批量测试完成"
+                self.batchMessage = "可保持同一批音频，切换模型后再测一轮。"
+                self.reloadHistory()
+                self.refreshInputsAutomatically()
+            }
+        }
+    }
+    func stopBatch() {
+        guard phase == .batch else { return }
+        ticket?.cancel()
+        pipeline.cancellation.cancel()
+        status = "正在停止当前文件并保存日志"
+    }
     func reloadHistory() {
-        Task { [weak self] in
-            let values = await Task.detached(priority: .utility) { SessionStore.all() }.value
-            self?.records = values
+        guard !historyBusy else { return }
+        historyGeneration += 1
+        let generation = historyGeneration
+        historyQueue.async { [weak self] in
+            let records = SessionStore.all(), groups = BatchLogStore.all(), watch = WatchASRLogStore.all()
+            Task { @MainActor [weak self] in
+                guard let self, self.historyGeneration == generation else { return }
+                self.records = records; self.batchGroups = groups; self.watchLogs = watch
+            }
         }
     }
     func deleteRecord(_ value: SessionRecord) {
-        guard phase != .recording && phase != .stopping && phase != .preparing else { return }
-        Task { [weak self] in
-            let failure = await Task.detached { () -> String? in
-                do { try SessionStore.delete(value); return nil } catch { return error.localizedDescription }
-            }.value
-            self?.historyError = failure; self?.reloadHistory()
+        guard canConfigureModel, value.batch == nil else { return }
+        performHistoryMutation {
+            try SessionStore.delete(value)
+        }
+    }
+    func deleteBatch(_ value: BatchLogGroup) {
+        guard canConfigureModel else { return }
+        performHistoryMutation { try BatchLogStore.delete(value.id) }
+    }
+    func clearLogs() {
+        guard canConfigureModel else { return }
+        performHistoryMutation {
+            let directory = SessionStore.directory
+            if FileManager.default.fileExists(atPath: directory.path) { try FileManager.default.removeItem(at: directory) }
+            let watch = WatchASRLogStore.directory
+            if FileManager.default.fileExists(atPath: watch.path) { try FileManager.default.removeItem(at: watch) }
+        }
+    }
+    func deleteWatchLog(_ value: WatchASRLog) {
+        guard canConfigureModel else { return }
+        performHistoryMutation { try WatchASRLogStore.delete(value) }
+    }
+    private func performHistoryMutation(_ operation: @escaping @Sendable () throws -> Void) {
+        historyBusy = true; historyGeneration += 1
+        historyQueue.async { [weak self] in
+            let failure: String?
+            do { try operation(); failure = nil } catch { failure = error.localizedDescription }
+            let records = SessionStore.all(), groups = BatchLogStore.all(), watch = WatchASRLogStore.all()
+            Task { @MainActor [weak self] in
+                self?.historyError = failure; self?.records = records; self?.batchGroups = groups; self?.watchLogs = watch
+                self?.historyBusy = false
+            }
+        }
+    }
+    func exportAllLogs() {
+        guard canConfigureModel else { return }
+        historyBusy = true; historyError = nil; exportURL = nil
+        historyQueue.async { [weak self] in
+            let outcome = Result { try AllLogsExport.create() }
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                self.historyBusy = false
+                switch outcome {
+                case .success(let url): self.exportURL = url
+                case .failure(let error): self.historyError = error.localizedDescription
+                }
+            }
         }
     }
     private func prepare(id: UUID) {

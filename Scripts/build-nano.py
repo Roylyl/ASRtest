@@ -2,7 +2,6 @@
 """Build isolated native Nano frameworks. --macos adds a native smoke-test build."""
 from pathlib import Path
 import argparse
-import json
 import plistlib
 import shutil
 import subprocess
@@ -16,16 +15,8 @@ LLAMA_REV = "8086439a4cea94c71a5dfb8fe4ad1546aebd640f"
 def run(args):
     subprocess.run([str(x) for x in args], check=True)
 
-def ensure_source(path, url, revision):
-    marker = path / ".asrtest-upstream.json"
-    if marker.is_file():
-        value = json.loads(marker.read_text())
-        if value.get("repo") != url or value.get("commit") != revision:
-            raise RuntimeError(f"Unexpected vendored source marker at {path}")
-        return
+def checkout(path, url, revision):
     if not (path / ".git").exists():
-        if path.exists() and any(path.iterdir()):
-            raise RuntimeError(f"Source is neither a marked snapshot nor a Git checkout: {path}")
         path.mkdir(parents=True, exist_ok=True)
         run(["git", "init", path])
         run(["git", "-C", path, "remote", "add", "origin", url])
@@ -78,8 +69,8 @@ if __name__ == "__main__":
     parser.add_argument("--macos", action="store_true")
     parser.add_argument("--macos-only", action="store_true")
     args = parser.parse_args()
-    ensure_source(ROOT / "Vendor/Fun-ASR", "https://github.com/QwenAudio/Fun-ASR.git", FUNASR_REV)
-    ensure_source(ROOT / "Vendor/Fun-ASR/third_party/llama.cpp", "https://github.com/ggml-org/llama.cpp.git", LLAMA_REV)
+    checkout(ROOT / "Vendor/Fun-ASR", "https://github.com/QwenAudio/Fun-ASR.git", FUNASR_REV)
+    checkout(ROOT / "Vendor/Fun-ASR/third_party/llama.cpp", "https://github.com/ggml-org/llama.cpp.git", LLAMA_REV)
     run(["python3", ROOT / "Scripts/prepare-nano-source.py"])
     if args.macos or args.macos_only:
         build("macosx")

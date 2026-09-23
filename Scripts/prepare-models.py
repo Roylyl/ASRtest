@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""Prepare/verify ModelLibrary from ModelsManifest.json before building the app.
-Xcode bundles this local ModelLibrary; the app itself never downloads models.
-Build-time downloads use pinned sources and verified checksums.
+"""Prepare/verify external ModelLibrary from ModelsManifest.json.
+No file is added to the app bundle. Downloads are pinned and checksum verified.
 Usage: python3 Scripts/prepare-models.py [--verify-only] [--model senseVoice]
 """
 from pathlib import Path

@@ -1,0 +1,4 @@
+module WatchWhisper {
+  header "WatchWhisper.h"
+  export *
+}

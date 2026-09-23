@@ -1,14 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-if [[ "${1:-}" == --help ]]; then
- echo 'Usage: bash Scripts/run-model-store-smoke.sh'
- echo 'ASR_TEST_SIMULATOR selects a booted iOS simulator; default requires exactly one. No physical device is selected.'
- exit 0
-fi
-SIMULATOR_ARGS=(--booted)
-if [[ -n "${ASR_TEST_SIMULATOR:-}" ]]; then SIMULATOR_ARGS+=(--udid "$ASR_TEST_SIMULATOR"); fi
-SIMULATOR="$(python3 "$ROOT/Scripts/select-ios-simulator.py" "${SIMULATOR_ARGS[@]}")"
 OUT="$ROOT/Tests/model-store-build"
 APP="$OUT/ModelStoreSmoke.app"
 mkdir -p "$APP"
@@ -35,7 +27,7 @@ cat > "$APP/Info.plist" <<'PLIST'
 </dict></plist>
 PLIST
 codesign --force --sign - "$APP"
-xcrun simctl install "$SIMULATOR" "$APP"
-xcrun simctl launch --console --terminate-running-process "$SIMULATOR" com.roylyl.asrtest.model-store-smoke | tee "$OUT/run.log"
+xcrun simctl install booted "$APP"
+xcrun simctl launch --console --terminate-running-process booted com.roylyl.asrtest.model-store-smoke | tee "$OUT/run.log"
 # simctl can return success even if an app exits early during launch.
 rg -q "BUNDLED MODEL STORE AND SESSION STORE PASS" "$OUT/run.log"

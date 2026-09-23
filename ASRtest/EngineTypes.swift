@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
 import Foundation
 
 enum ModelID: String, CaseIterable, Codable, Identifiable, Sendable {
