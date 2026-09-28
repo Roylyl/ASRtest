@@ -89,6 +89,8 @@ compile_commands.json
 # hide files such as .idea metadata, build scripts, Podfiles, or static libs.
 !/Vendor/
 !/Vendor/**
+# Finder metadata is generated locally, including inside preserved vendor sources.
+Vendor/**/.DS_Store
 /Vendor/**/.git/
 /Vendor/**/.build/
 
