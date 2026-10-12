@@ -1,3 +1,6 @@
+import groovy.json.JsonSlurper
+import java.util.zip.ZipFile
+
 plugins { id 'com.android.application'; id 'org.jetbrains.kotlin.android' }
 android {
  namespace 'com.roylyl.asrtest'
@@ -11,3 +14,74 @@ android {
  packaging { jniLibs { useLegacyPackaging true; pickFirsts += ['**/libc++_shared.so'] } }
 }
 dependencies { implementation fileTree(dir: 'libs', include: ['*.aar','*.jar']) }
+
+// Only inspect manifest JSON and file sizes; never hash or load model weights.
+def sharedAssets = rootProject.file('../../shared/assets')
+def manifestFile = new File(sharedAssets, 'ModelsManifest.json')
+def supportedModels = ['zipformer', 'whisperTiny', 'whisperBase', 'voskChinese',
+                       'voskEnglish', 'senseVoice', 'paraformer', 'nano'] as Set
+
+def readModelManifest = {
+    def manifest = new JsonSlurper().parse(manifestFile)
+    def ids = manifest.models.collect { it.id }
+    if (ids.size() != 8 || (ids as Set) != supportedModels) {
+        throw new GradleException('Model manifest must contain all eight supported model groups.')
+    }
+    if (manifest.models.any { !it.files }) {
+        throw new GradleException('A model has no required files in the manifest.')
+    }
+    manifest
+}
+def requiredModelFiles = { manifest ->
+    manifest.models.collectMany { model ->
+        model.files.collect { item ->
+            [path: "ModelLibrary/${model.id}/${item.path}", bytes: item.bytes as long]
+        }
+    }
+}
+
+def checkModelSources = tasks.register('checkModelSources') {
+    group = 'verification'
+    description = 'Check all eight local models without hashing or reading weights.'
+    doLast {
+        def expected = requiredModelFiles(readModelManifest())
+        expected.each { item ->
+            def file = new File(sharedAssets, item.path)
+            if (!file.isFile() || file.length() != item.bytes) {
+                throw new GradleException("Missing or incomplete model file: ${file}. Obtain complete Git LFS files.")
+            }
+        }
+        logger.lifecycle("PASS model sources: 8 groups, ${expected.size()} required files")
+    }
+}
+tasks.named('preBuild').configure { dependsOn(checkModelSources) }
+
+android.applicationVariants.all { variant ->
+    variant.assembleProvider.configure {
+        doLast {
+            def manifest = readModelManifest()
+            def expected = requiredModelFiles(manifest)
+            variant.outputs.each { output ->
+                def apk = output.outputFile
+                if (!apk.isFile()) throw new GradleException("Missing APK: ${apk}")
+                new ZipFile(apk).withCloseable { archive ->
+                    def metadata = archive.getEntry('assets/ModelsManifest.json')
+                    if (metadata == null) throw new GradleException("Missing model manifest in ${apk}")
+                    def packagedManifest = archive.getInputStream(metadata).withCloseable {
+                        new JsonSlurper().parse(it)
+                    }
+                    if (packagedManifest != manifest) {
+                        throw new GradleException("Packaged model manifest differs from shared manifest: ${apk}")
+                    }
+                    expected.each { item ->
+                        def entry = archive.getEntry('assets/' + item.path)
+                        if (entry == null || entry.size != item.bytes) {
+                            throw new GradleException("Missing or incomplete packaged model: ${item.path} in ${apk}")
+                        }
+                    }
+                }
+                logger.lifecycle("PASS ${apk.name}: 8 groups, ${expected.size()} required model files")
+            }
+        }
+    }
+}

@@ -189,6 +189,7 @@
 				000000000000000120000000 /* Sources */,
 				000000000000000130000000 /* Frameworks */,
 				000000000000000140000000 /* Resources */,
+				C40000000000000000000001 /* Check bundled models */,
 				DE76ED170855FF7991BAA494 /* Embed Watch Content */,
 			);
 			buildRules = (
@@ -306,6 +307,27 @@
 			);
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+        C40000000000000000000001 /* Check bundled models */ = {
+            isa = PBXShellScriptBuildPhase;
+            alwaysOutOfDate = 1;
+            buildActionMask = 2147483647;
+            files = ();
+            inputPaths = (
+                "$(SRCROOT)/../../Scripts/check-bundled-models.py",
+                "$(SRCROOT)/../../shared/assets/ModelsManifest.json",
+                "$(SRCROOT)/../../shared/assets/ModelLibrary",
+                "$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/ModelsManifest.json",
+                "$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/ModelLibrary",
+            );
+            name = "Check bundled models";
+            outputPaths = ("$(DERIVED_FILE_DIR)/bundled-models-checked.txt",);
+            runOnlyForDeploymentPostprocessing = 0;
+            shellPath = /bin/sh;
+            shellScript = "set -eu\nPYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 \"$SRCROOT/../../Scripts/check-bundled-models.py\" --app \"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\necho 'Eight model groups packaged' > \"$DERIVED_FILE_DIR/bundled-models-checked.txt\"\n";
+        };
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		000000000000000120000000 /* Sources */ = {

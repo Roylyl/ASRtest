@@ -28,6 +28,8 @@ git lfs pull
 
 普通源码由Git管理，大型模型和预编译运行库由Git LFS管理。构建前需要获取完整LFS文件；App运行时无需下载或导入模型。第一次解析SwiftPM或Gradle依赖需要网络。
 
+Xcode与Android Studio的构建都检查八组模型是否完整进入产物。模型文件缺失、文件大小不符或未获取完整Git LFS文件时，构建会报错；检查仅读取模型清单和文件大小，不计算权重哈希。
+
 ### iOS
 
 1. 用Xcode打开`apps/ios/ASRtest.xcodeproj`，选择`ASRtest` Scheme。
