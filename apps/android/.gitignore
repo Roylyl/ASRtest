@@ -1,0 +1,16 @@
+.DS_Store
+.gradle/
+**/build/
+local.properties
+.cxx/
+*.iml
+.idea/
+results/device/
+__pycache__/
+*.pyc
+/native/build/
+/native/build.log
+/results/flops-attempt/*-build/
+/results/flops-attempt/*-tool/
+/results/flops-attempt/whisper-source/
+/results/flops-attempt/*.f32

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ASRtest" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">@color/asr_blue</item>
+        <item name="android:windowBackground">@color/asr_background</item>
+        <item name="android:colorBackground">@color/asr_surface</item>
+        <item name="android:textColorPrimary">@color/asr_text</item>
+        <item name="android:textColorSecondary">@color/asr_secondary</item>
+        <item name="android:statusBarColor">@color/asr_background</item>
+        <item name="android:navigationBarColor">@color/asr_surface</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowActionModeOverlay">true</item>
+    </style>
+</resources>

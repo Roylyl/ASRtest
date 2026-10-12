@@ -17,9 +17,10 @@ import subprocess
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
+IOS_ROOT = ROOT / "apps/ios"
 REVISION = "927cfce34f31707e17f2bff35c349632fb9e2c3a"
 SOURCE = ROOT / "Vendor/whisper.cpp"
-PACKAGE = ROOT / "Packages/WhisperRuntime"
+PACKAGE = IOS_ROOT / "Packages/WhisperRuntime"
 BUILD = PACKAGE / ".build-native"
 
 
@@ -123,7 +124,7 @@ def main():
         spec = importlib.util.spec_from_file_location("runtime_preparation", ROOT / "Scripts/prepare-runtimes.py")
         verifier = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(verifier)
-        manifest = json.loads((ROOT / "RuntimeArtifactsManifest.json").read_text())
+        manifest = json.loads((IOS_ROOT / "RuntimeArtifactsManifest.json").read_text())
         runtime = next(entry for entry in manifest["runtimes"] if entry["id"] == "whisper")
         verifier.check_structure(staging, runtime)
         previous = temporary / "previous"

@@ -6,7 +6,8 @@ Usage: python3 Scripts/prepare-models.py [--verify-only] [--model senseVoice]
 from pathlib import Path
 import argparse, hashlib, json, shutil, subprocess, tempfile, zipfile
 ROOT = Path(__file__).resolve().parents[1]
-LIBRARY = ROOT / 'ModelLibrary'
+ASSETS = ROOT / 'shared/assets'
+LIBRARY = ASSETS / 'ModelLibrary'
 def digest(path):
     h=hashlib.sha256()
     with path.open('rb') as f:
@@ -50,7 +51,7 @@ def main():
     parser.add_argument('--verify-only',action='store_true')
     parser.add_argument('--model',action='append',default=[])
     args=parser.parse_args()
-    manifest=json.loads((ROOT/'ModelsManifest.json').read_text())
+    manifest=json.loads((ASSETS/'ModelsManifest.json').read_text())
     models=[m for m in manifest['models'] if not args.model or m['id'] in args.model]
     unknown=set(args.model)-{m['id'] for m in models}
     if unknown:parser.error('Unknown model IDs: '+', '.join(sorted(unknown)))

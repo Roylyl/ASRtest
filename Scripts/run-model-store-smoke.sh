@@ -1,15 +1,16 @@
 #!/bin/bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-OUT="$ROOT/Tests/model-store-build"
+IOS_ROOT="$ROOT/apps/ios"
+OUT="$IOS_ROOT/Tests/model-store-build"
 APP="$OUT/ModelStoreSmoke.app"
 mkdir -p "$APP"
 xcrun --sdk iphonesimulator swiftc -target arm64-apple-ios17.0-simulator \
  -sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)" -parse-as-library \
- "$ROOT/ASRtest/EngineTypes.swift" "$ROOT/ASRtest/ModelCatalog.swift" \
- "$ROOT/ASRtest/ModelStore.swift" "$ROOT/ASRtest/SessionStore.swift" \
- "$ROOT/Tests/ModelStoreSmoke.swift" -o "$APP/ModelStoreSmoke"
-python3 "$ROOT/Tests/prepare-bundled-smoke.py" "$APP"
+ "$IOS_ROOT/ASRtest/EngineTypes.swift" "$IOS_ROOT/ASRtest/ModelCatalog.swift" \
+ "$IOS_ROOT/ASRtest/ModelStore.swift" "$IOS_ROOT/ASRtest/SessionStore.swift" \
+ "$IOS_ROOT/Tests/ModelStoreSmoke.swift" -o "$APP/ModelStoreSmoke"
+python3 "$IOS_ROOT/Tests/prepare-bundled-smoke.py" "$APP"
 cat > "$APP/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

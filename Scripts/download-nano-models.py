@@ -7,7 +7,7 @@ import json
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
-DEST = ROOT / "ModelLibrary/nano"
+DEST = ROOT / "shared/assets/ModelLibrary/nano"
 REV = "46e849502a867080d66d351b8dfb1018b607e509"
 VAD_REV = "6840bae4c5c92ee8c04faaf4db23dd0105098d7f"
 FILES = [

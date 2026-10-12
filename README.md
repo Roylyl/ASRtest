@@ -1,211 +1,147 @@
-<div align="center">
+<p align="center"><img src="apps/ios/ASRtest/Assets.xcassets/AppIcon.appiconset/AppIcon.png" width="112" alt="ASRtest应用图标"></p>
 
-<img src="ASRtest/Assets.xcassets/AppIcon.appiconset/AppIcon.png" width="128" height="128" alt="ASRtest iOS应用图标">
+<h1 align="center">ASRtest</h1>
+<p align="center">Android、iPhone与iPad的离线语音识别模型对比工具，附Apple Watch实验入口。</p>
+<p align="center">
+  <a href="apps/ios/ASRtest.xcodeproj/project.pbxproj"><img src="https://img.shields.io/badge/iOS_version-2.0.0-2563eb?style=flat-square" alt="iOS版本2.0.0"></a>
+  <a href="apps/android/app/build.gradle"><img src="https://img.shields.io/badge/Android_version-1.0.0-2563eb?style=flat-square" alt="Android版本1.0.0"></a>
+  <a href="#运行要求"><img src="https://img.shields.io/badge/platform-iOS_17%2B_%7C_Android_8%2B-555555?style=flat-square" alt="iOS17及Android8以上"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/app_license-Apache--2.0-64748b?style=flat-square" alt="App源码Apache-2.0许可"></a>
+  <a href="https://github.com/Roylyl/ASRtest/issues"><img src="https://img.shields.io/github/issues/Roylyl/ASRtest?style=flat-square" alt="GitHub Issues"></a>
+</p>
+<p align="center"><a href="#快速开始">快速开始</a> · <a href="#主要功能">主要功能</a> · <a href="#八组模型">八组模型</a> · <a href="#界面预览">界面预览</a> · <a href="#开发与目录">开发与目录</a> · <a href="#许可与来源">许可与来源</a></p>
 
-# ASRtest
+ASRtest用于在设备上比较不同ASR模型的转写、流式表现和运行开销。八组模型及必要运行库随手机App集成，使用统一的录音、模型切换和日志界面。识别完全在本机执行，不上传音频，也不依赖云端ASR。
 
-### iPhone、iPad与Apple Watch的离线语音识别模型测试工具
+Android与iOS源码在同一个仓库独立构建，共用模型权重、来源记录和演示语料。配套Watch App仅包含Whisper tiny，使用单独构建的watchOS运行库。
 
-[![Version](https://img.shields.io/badge/version-2.0.0-2563eb?style=flat-square)](ASRtest.xcodeproj/project.pbxproj)
-[![iOS](https://img.shields.io/badge/iOS-17%2B-111827?style=flat-square)](#1-打开与运行)
-[![watchOS](https://img.shields.io/badge/watchOS-10%2B-111827?style=flat-square)](#apple-watch-本地运行库与许可)
-[![Models](https://img.shields.io/badge/iOS%20models-8-0f766e?style=flat-square)](#3-已接入模型)
-[![Offline](https://img.shields.io/badge/inference-on--device-0f766e?style=flat-square)](#离线测试)
-[![License](https://img.shields.io/badge/license-Apache--2.0-64748b?style=flat-square)](LICENSE)
+## 快速开始
 
-[项目速览](#项目速览) · [界面预览](#界面预览) · [打开与运行](#1-打开与运行) · [已接入模型](#3-已接入模型) · [测试记录](#5-测试记录与指标) · [验证与边界](#7-已完成的验证与边界) · [常见问题](#8-常见问题)
+先安装Git LFS，再获取完整源码与模型：
 
-</div>
+```sh
+git lfs install
+git clone https://github.com/Roylyl/ASRtest.git
+cd ASRtest
+git lfs pull
+```
 
-ASRtest 2.0.0是一个完全本地运行的iOS ASR模型测试工具，由原ASRtest1IOS、ASRtest2IOS、ASRtest3IOS整合而来。iPhone/iPad端八组模型及必要运行库全部随App打包，使用同一套录音、模型切换和测试记录界面。首次安装后即可离线切换使用，无需另行获取模型。配套Watch App只包含Whisper tiny，不使用iPhone代算。识别过程中不上传音频，不包含云端ASR、聊天或摘要功能。
-工程入口为 `ASRtest.xcodeproj`；iOS Scheme为 `ASRtest`，Watch Scheme为 `ASRtestWatch`。最低系统版本为iOS 17.0和watchOS 10.0。iOS支持arm64 iPhone/iPad及Apple Silicon Mac的arm64 Simulator；现有依赖不支持Intel Mac的x86_64 Simulator。真机安装需在Xcode中配置自己的开发团队与Bundle Identifier，且iPhone App与Watch App均需满足签名要求。
+普通源码由Git管理，大型模型和预编译运行库由Git LFS管理。构建前需要获取完整LFS文件；App运行时无需下载或导入模型。第一次解析SwiftPM或Gradle依赖需要网络。
 
-## 项目速览
+### iOS
 
-| 项目 | 当前工程 |
+1. 用Xcode打开`apps/ios/ASRtest.xcodeproj`，选择`ASRtest` Scheme。
+2. 将`apps/ios/Config/Local.xcconfig.example`复制为同目录的`Local.xcconfig`，填写自己的开发团队和唯一Bundle Identifier。个人配置已被Git忽略。
+3. 选择iPhone、iPad或Apple Silicon上的arm64 Simulator运行。首次使用允许麦克风访问，在“设置”中切换模型。
+
+从仓库根目录执行无签名设备构建：
+
+```sh
+./Scripts/build-ios.sh
+```
+
+### Android
+
+1. 用Android Studio打开`apps/android`，将Gradle JDK设置为JDK17，安装Android SDK35。
+2. 连接开启USB调试的arm64手机，选择`app`运行。
+3. 在“设置”选择模型；测试页可单模型录音，也可让多个模型依次识别同一句录音。
+
+从仓库根目录构建及安装Debug APK：
+
+```sh
+./Scripts/build-android.sh
+adb install -r -g apps/android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+详细评测、指标口径和原生运行库重建见[Android开发说明](docs/Android.md)。APK是本地构建产物，不纳入源码仓库。
+
+## 运行要求
+
+|平台|要求|
 |---|---|
-| 应用版本 | `2.0.0` |
-| iPhone/iPad | 八组随App打包的本地ASR模型；支持录音、单文件与批量WAV测试 |
-| Apple Watch | 手表本地运行Whisper tiny，提供向配对iPhone传输日志的流程 |
-| 数据处理 | 音频与推理保留在设备上；日志可在App内查看和导出 |
-| 工程与许可 | `ASRtest.xcodeproj`；项目源码采用 [Apache-2.0](LICENSE)，第三方材料见 [署名与许可清单](THIRD_PARTY_NOTICES.md) |
+|iPhone/iPad|iOS17及以上；Xcode与对应SDK；真机运行需要自己的开发签名|
+|iOS Simulator|Apple Silicon Mac、arm64 Simulator；现有iOS依赖不提供完整x86_64 Simulator组合|
+|Android|Android8.0及以上、arm64-v8a；开发使用JDK17、SDK35、Gradle8.10.2|
+|Apple Watch|watchOS10及以上；配对iPhone与Watch均需有效签名；当前为实验入口|
+
+八组必要模型合计约1.857GB。构建缓存、安装包及Android私有目录中的模型副本另占存储空间；Nano模型约955MB。
+
+## 主要功能
+
+|页面|用途|
+|---|---|
+|测试|开始/停止录音、完整转写、真实流式中间结果或停止后的最终结果、音频时长及识别耗时|
+|日志及模型信息|历史转写、状态与错误、模型来源；删除记录与导出JSON/JSONL日志ZIP|
+|设置|模型切换、适用模型的语言、线程及SenseVoice ITN；iOS可切换麦克风输入源|
+
+iOS支持单文件与多选WAV逐文件识别、批量组日志、同一批音频切换模型重测，以及iPad宽屏控制与结果双栏。Android支持同一句录音多模型对比、保留录音重测、多选WAV处理及内置演示语料自动评测。两端保留各模型真实的流式和非流式差异。
+
+手机端每次只加载一个模型。单模型流式录音上限600秒，非流式及Android多模型比较单轮上限30秒。模型切换先释放当前识别器；录音及识别期间固定本轮配置。日志ZIP保留结果与过程记录，不混入模型或原始音频。
+
+## 八组模型
+
+模型大小为对应配置必要文件的十进制MB，不是安装体积或运行内存。权重统一位于`shared/assets/ModelLibrary/`。
+
+|模型|推理框架|语言与方式|文件大小|目录|
+|---|---|---|---:|---|
+|Zipformer Small，2023-02-16/chunk32|sherpa-onnx/ONNX Runtime|中英，原生流式|60.14MB|`zipformer`|
+|Whisper tiny multilingual|whisper.cpp|多语言，停止后转写|77.69MB|`whisperTiny`|
+|Whisper base multilingual|whisper.cpp|多语言，停止后转写|147.95MB|`whisperBase`|
+|Vosk small-cn-0.22|Vosk|中文，流式|68.29MB|`voskChinese`|
+|Vosk small-en-us-0.15|Vosk|英文，流式|70.90MB|`voskEnglish`|
+|SenseVoiceSmall INT8|sherpa-onnx Offline API|中、英、粤、日、韩，停止后转写|239.55MB|`senseVoice`|
+|Paraformer Streaming INT8|sherpa-onnx Online API|中英，原生流式|237.20MB|`paraformer`|
+|Fun-ASR-Nano Q4|原生Fun-ASR/llama.cpp/GGML|中、英、日，停止后本地VAD分段转写|955.27MB|`nano`|
+
+Whisper UI提供自动、中文和英文选项。Vosk线程由运行库管理，通用线程设置不作为其实际生效线程数。Nano为实验性CPU移植，使用官方配套encoder/adaptor、Q4_K_M解码器和FSMN-VAD。
+
+Watch只打包Whisper tiny，不调用iPhone代算。当前Debug提供实验录音入口，Release禁用录音；实体手表本地推理仍需完成确认。其他模型在Watch端标为不可用。手表日志先本地保存，用户导出后通过WatchConnectivity传至iPhone，区分排队、传送完成和iPhone入库确认。
 
 ## 界面预览
 
 <table>
   <tr>
-    <td align="center"><img src="Preview/ui-test-light.png" alt="浅色测试页" width="240"><br><sub>测试页 · 浅色</sub></td>
-    <td align="center"><img src="Preview/ui-test-dark.png" alt="深色测试页" width="240"><br><sub>测试页 · 深色</sub></td>
-    <td align="center"><img src="Preview/ui-model-selector-light.png" alt="模型选择器" width="240"><br><sub>模型选择</sub></td>
+    <td align="center"><img src="docs/screenshots/ios/ui-test-light.png" width="240" alt="iOS浅色测试页"><br><sub>iOS测试</sub></td>
+    <td align="center"><img src="docs/screenshots/ios/ui-test-dark.png" width="240" alt="iOS深色测试页"><br><sub>iOS深色</sub></td>
+    <td align="center"><img src="docs/screenshots/ios/ui-model-selector-light.png" width="240" alt="iOS模型选择"><br><sub>iOS模型选择</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="Preview/ui-logs-light.png" alt="日志页" width="240"><br><sub>日志与模型信息</sub></td>
-    <td align="center"><img src="Preview/ui-settings-light.png" alt="设置页" width="240"><br><sub>设置</sub></td>
-    <td align="center"><img src="Preview/ui-models-light.png" alt="模型信息页" width="240"><br><sub>模型信息</sub></td>
+    <td align="center"><img src="docs/screenshots/android/test-light.png" width="240" alt="Android测试页"><br><sub>Android测试</sub></td>
+    <td align="center"><img src="docs/screenshots/android/logs-light.png" width="240" alt="Android日志页"><br><sub>Android日志</sub></td>
+    <td align="center"><img src="docs/screenshots/android/settings-light.png" width="240" alt="Android设置页"><br><sub>Android设置</sub></td>
   </tr>
 </table>
 
-以上截图由 `ASRtestUISmoke` 在iPhone 18 Pro、iOS 27.0模拟器中从当前源码自动生成；用于展示界面与导航，不代表真机识别准确率、耗时、内存或温升。
+iOS沿用原生Tab Bar、系统导航与适用系统上的液态玻璃按钮；Android使用蓝白分组卡片并适配系统深色模式。更多截图见[iOS截图](docs/screenshots/ios/)与[Android截图](docs/screenshots/android/)。
 
-## 1. 打开与运行
-
-克隆仓库前安装Git LFS，克隆后执行 `git lfs pull`，确保 `ModelLibrary/` 中的权重和 `Packages/` 中的运行库已下载为真实文件。若只看到LFS指针文件，模型校验和构建会失败。
-
-1. 用Xcode打开仓库根目录的 `ASRtest.xcodeproj`，等待Swift Package Manager完成依赖解析。第一次解析官方sherpa/ONNX Runtime包需要网络。
-2. 选择 `ASRtest` target，检查Signing & Capabilities。将开发团队与Bundle Identifier设置为自己的签名配置；App版本号为 `2.0.0`。
-3. 通过USB连接自己的iPhone，完成信任与开发者模式设置，选择该设备后Run。也可选择Apple Silicon上的iOS Simulator检查界面和文件推理流程。
-4. 首次启动默认加载Zipformer Small。允许麦克风访问后，在“测试”页开始和停止录音；在“设置”中可直接切换其余七组内置模型。
-
-本工程已经完成iOS device与Simulator构建，以及模拟器中的本地模型文件推理回归；尚未用用户的iPhone实测麦克风采集、输入设备切换、耗电、发热和运行内存。Simulator上的识别时间不能作为手机性能结论。
-
-## 2. 三个页面
-界面采用系统原生Tab Bar、导航栏与模型选择面板；支持液态玻璃的系统使用原生玻璃模型按钮、录音按钮和工具按钮。识别文字、日志和指标保持实底以保证阅读；浅色、深色与减少透明度设置分别适配，旧系统使用系统卡片及标准按钮。首页点击当前模型卡片，也可直接切换八组内置模型。
-
-| 页面 | 功能 |
-|---|---|
-| 测试 | 单次录音与逐文件WAV批量测试；显示流式中间文字或非流式最终文字、进度、耗时及输入源。同一批文件可切换模型再测一轮。iPad宽屏显示左侧控制、右侧结果；窄屏单列。 |
-| 日志及模型信息 | 浏览单次、批量组与已入库的Watch日志；查看每个文件完整转写、状态和耗时；安全删除、清空、导出全部日志ZIP；查看模型来源和文件。 |
-| 设置 | 切换模型、麦克风输入源和支持的语言选项；设置适用模型的CPU线程数、SenseVoice ITN；查看内置模型状态和App版本。 |
-
-八组权重都在App Bundle，但一次只加载一个模型。模型切换前会释放当前识别器，直接读取当前Bundle中的新模型，通过文件校验后再加载。录音和处理期间限制修改模型与识别选项，避免一条记录混入两套配置。输入源保留手动刷新按钮，并在进入前台、音频路由变化及相关会话状态变化时自动刷新；记录中保存实际使用的输入设备。
-流式模型在录音期间输出中间结果，结束时完成尾部处理。Whisper、SenseVoice和Nano在停止后进行转写，不生成伪流式结果。本工具的流式录音上限为每轮600秒，非流式为每轮30秒；这是当前测试App的限制，不是模型能力上限。
-
-### 批量WAV测试
-
-在测试页选择最多100个WAV。选中文件会复制到App临时目录，用于当前会话中切换模型重测；每轮开始时固定模型、语言、线程和ITN设置。文件按顺序打开、按块解码，不会一次把整批PCM放入内存。无法导入、格式不支持或超过所选模型单轮时长上限的文件标记失败，后续文件继续处理；“停止批量测试”会结束当前文件并跳过余项。每轮产生独立批量组，每个成功进入识别器的文件保留自己的完整JSON/JSONL，会话JSON中含批次与文件关联。原始音频不写入日志，也不进入ZIP。文件临时副本在选用新批次后移除；如需跨App重启重测，请重新选择原文件。
-
-## 3. 已接入模型
-
-以下大小是对应配置全部必要模型文件的十进制MB，不是App安装体积或运行内存。所有八组均已完成原生接入及本地样例推理，权重全部内置；切换时等待校验和加载完成即可。
-
-| 模型 | 本地推理框架 | 语言及识别方式 | 文件大小 | ModelLibrary目录 |
-|---|---|---|---:|---|
-| Zipformer Small | sherpa-onnx | 中英，原生流式；2023-02-16/chunk 32 | 60.14 MB | `zipformer` |
-| Whisper tiny multilingual | whisper.cpp | 多语言，录音后转写；当前UI提供自动/中文/英文 | 77.69 MB | `whisperTiny` |
-| Whisper base multilingual | whisper.cpp | 多语言，录音后转写；当前UI提供自动/中文/英文 | 147.95 MB | `whisperBase` |
-| Vosk small-cn-0.22 | Vosk | 中文，原生流式 | 68.29 MB | `voskChinese` |
-| Vosk small-en-us-0.15 | Vosk | 英文，原生流式 | 70.90 MB | `voskEnglish` |
-| SenseVoiceSmall INT8 | sherpa-onnx Offline API | 中、英、粤、日、韩；录音后转写，可选语言和ITN | 239.55 MB | `senseVoice` |
-| Paraformer Streaming INT8 | sherpa-onnx Online API | 中英，原生流式 | 237.20 MB | `paraformer` |
-| Fun-ASR-Nano Q4 | 原生Fun-ASR/llama.cpp/GGML | 中、英、日；停止后本地VAD分段与转写，实验性移植 | 955.27 MB | `nano` |
-
-Nano使用官方配套的音频encoder/adaptor、ASR解码器和FSMN-VAD，全部在本机运行。当前一轮最多30秒，停止后按VAD和有界窗口处理，不在录音期间显示实时文字。原生实现采用CPU，运行内存、温升与长时间稳定性仍需在目标iPhone上验证。
-模型与项目来源：
-
-- sherpa-onnx：https://github.com/k2-fsa/sherpa-onnx
-- whisper.cpp：https://github.com/ggml-org/whisper.cpp
-- Vosk：https://github.com/alphacep/vosk-api
-- SenseVoice：https://github.com/QwenAudio/SenseVoice
-- FunASR/Paraformer：https://github.com/modelscope/FunASR
-- Fun-ASR/Nano：https://github.com/QwenAudio/Fun-ASR
-
-## 4. 全部模型随App打包
-
-八组模型文件合计 **1,857,000,819字节，约1.857 GB**，均来自工程根目录的 `ModelLibrary`，作为完整文件夹资源打进App Bundle。安装体积还包含程序、运行库和其他资源，实际以Xcode与设备显示为准。
-运行时直接读取 `ASRtest.app/ModelLibrary/<模型ID>`。这些是只读的内置资源，App不会再建立另一套可替换的模型目录，也不读取旧版本的导入副本。更换权重版本需更新工程资源与清单后重新构建；日常测试只需在设置中切换模型。
+## 开发与目录
 
 ```text
-ModelLibrary/
-  zipformer/       encoder-epoch-99-avg-1.int8.onnx
-                   decoder-epoch-99-avg-1.onnx
-                   joiner-epoch-99-avg-1.int8.onnx、tokens.txt
-  whisperTiny/     ggml-tiny.bin
-  whisperBase/     ggml-base.bin
-  voskChinese/     am/、conf/、graph/、ivector/、README
-  voskEnglish/     am/、conf/、graph/、ivector/、README
-  senseVoice/      model.int8.onnx、tokens.txt
-  paraformer/      encoder.int8.onnx、decoder.int8.onnx、tokens.txt
-  nano/            funasr-encoder-f16.gguf
-                   qwen3-0.6b-q4km.gguf、fsmn-vad.gguf
+ASRtest/
+├── apps/ios/                 # Xcode工程、Swift源码、Watch、Swift包及iOS运行库
+├── apps/android/             # Gradle工程、Kotlin源码、JNI及Android运行库
+├── shared/assets/            # 八组模型、唯一模型清单、演示音频及参考文字
+├── Vendor/                   # 固定版本的第三方源码快照
+├── Scripts/                  # 两平台构建入口及iOS运行库构建工具
+├── docs/                     # 开发资料与两平台截图
+└── Licenses/                 # 框架、运行库和模型许可原文
 ```
 
-Vosk中文与英文各保留14个必要文件及原有子目录结构；Nano同时包含encoder/adaptor、配套ASR解码器和FSMN-VAD三个GGUF。
-根目录 `ModelsManifest.json` 与App资源中的 `ASRtest/ModelsManifest.json` 记录每个文件的固定版本、字节数和SHA256。模型读取校验失败时会显示具体错误，不回退到服务器推理。电脑端维护资源时可运行：
+模型元数据见[ModelsManifest.json](shared/assets/ModelsManifest.json)，iOS预编译产物信息见[RuntimeArtifactsManifest.json](apps/ios/RuntimeArtifactsManifest.json)。同版本Whisper与Nano上游源码共用根目录`Vendor/`；Swift、JNI封装和各平台二进制独立保留。iOS XCFramework不能作为Android或watchOS运行库使用。
 
-```sh
-python3 Scripts/prepare-models.py --verify-only
-```
-
-该命令仅检查现有工程文件。日常安装与测试不需要执行模型准备脚本。更新源码或清单后，应重新构建并核对实际App Bundle中的文件，不能只检查电脑端的 `ModelLibrary`。
-
-### 离线测试
-
-安装本App后关闭Wi-Fi与移动数据，完全结束应用再重新打开，在设置中依次切换所需内置模型即可测试离线加载与识别。模型、日志和音频处理都保留在本机。首次Xcode解析运行库依赖或个人开发签名所需的网络条件，与App安装后的ASR离线能力分别看待。
-
-## 5. 测试记录与指标
-
-记录保存在App的 `Documents/Sessions`，可在“日志及模型信息”中单条导出或生成全部日志ZIP。
-
-- `<会话ID>.json`：模型、框架、文件版本与哈希、语言和线程设置、设备与实际输入源、最终文字、音频时长、调用耗时、停止后等待、状态与错误。
-- `<会话ID>.jsonl`：本轮配置、结果变化和结束事件等详细日志。
-- `BatchGroups/<批次ID>.json`：本轮固定配置、逐文件状态及会话ID关联。旧版没有 `batch` 字段的会话JSON继续可读。
-- `Documents/WatchLogs/<日志ID>.json`：手表经WatchConnectivity传送且iPhone成功写入后保存的日志；手表原件仍保留在手表上。
-
-原始麦克风音频只在内存中用于识别，不写入录音文件。删除一条记录会同时删除该会话的JSON和JSONL。打开日志列表时，损坏、版本不支持或标识不匹配的记录会被跳过，不影响其他记录。
-批量组删除会同时删除组内会话；清空日志只处理Sessions与WatchLogs，不删除模型。删除和ZIP导出在串行日志队列中执行，操作期间禁用新的识别和删除。ZIP原样保留JSON、JSONL、批量组及已入库手表日志，不包含模型或原始音频。
-“识别调用耗时”统计边界保留在记录的 `metricDefinition`：流式包含接收、解码、取结果和结束调用；非流式统计结束转写调用，均不包含录音等待、重采样、界面或日志写入。不要直接把它当作不同架构之间严格可比的模型RTF。“停止后等待”反映本轮结束后的实际等待体验；模型加载时间另记。
-
-## 6. 运行库结构与固定版本
-
-`NativeASREngine` 统一模型加载、会话开始、音频接收、结束、卸载接口；具体后端保留自身流式状态和结束方式。`RecognitionBackend` 负责音频转换、结果汇总与记录，`ASRController` 管理录音和界面状态。识别器及音频会话的主要操作在串行后台工作队列执行。
-
-| 依赖 | 工程中的方式 | 固定版本/来源 |
-|---|---|---|
-| sherpa-onnx | 官方SPM `sherpa-onnx-shared` | 1.13.8；commit `11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf` |
-| ONNX Runtime | sherpa传递依赖的shared iOS产品 | 1.28.2；commit `8ebc5ebf92190903c274a7621ba4c96a732335ec` |
-| whisper.cpp | `Packages/WhisperRuntime` 本地XCFramework | 1.9.4；commit `927cfce34f31707e17f2bff35c349632fb9e2c3a`，复用ASRtest2IOS的CPU + Accelerate构建 |
-| Vosk | `Packages/VoskRuntime` 本地XCFramework | 复用ASRtest3IOS；来自 `riderodd/react-native-vosk` commit `970d3d5e49225a1ebc24decbfd2d9317a02e7660`，Vosk核心版本未知 |
-| Nano | `Packages/NanoRuntime` 动态XCFramework | Fun-ASR commit `0339018ba74a7defa3b6b6a96718d17b816be77b`；llama.cpp commit `8086439a4cea94c71a5dfb8fe4ad1546aebd640f` |
-
-静态sherpa与静态Vosk实际产生了OpenFst重复符号，因此最终采用官方shared sherpa/ORT。Nano的llama/GGML内部符号封装在独立动态框架中，只导出 `asr_nano_*` C接口，避免与Whisper的GGML混用。Xcode构建时需保留SPM管理的动态框架嵌入与签名。
-模型来源的固定revision、逐文件URL、大小和SHA256记录在 `ModelsManifest.json`。Whisper和Vosk的现有二进制可直接使用；本统一工程没有新增这两套框架的重编脚本，Vosk社区二进制也不能据此推定为某个官方核心版本。
-Nano已提供可重复构建脚本，需要Xcode、Python 3、CMake：
+从仓库根目录重建Nano或Whisper的iOS运行库：
 
 ```sh
 python3 Scripts/build-nano.py
+python3 Scripts/build-whisper.py
 ```
 
-该脚本检查固定Vendor revision，调用 `Scripts/prepare-nano-source.py` 生成本地C接口实现，并构建arm64 iPhone与arm64 Simulator XCFramework。加 `--macos` 会额外生成供原生测试使用的macOS框架；该macOS产物不打进iOS App。Nano更详细的移植差异见 `Packages/NanoRuntime/README.md`。
+Watch与Android原生构建说明分别见[WatchWhisperRuntime](apps/ios/WatchWhisperRuntime/README.md)和[Android原生来源](apps/android/native/SOURCES.md)。参与开发请阅读[CONTRIBUTING.md](CONTRIBUTING.md)。
 
-### Apple Watch本地运行库与许可
+## 许可与来源
 
-现有sherpa-onnx与ONNX Runtime XCFramework只含iOS架构，不能直接链接watchOS。若要让Zipformer Small在手表运行，需要另行构建并验证watchOS版sherpa-onnx/ONNX Runtime；本次没有把它标为可用。Watch App选择重新构建 `whisper.cpp` 的通用CPU路径，只打包Whisper tiny多语言模型。它是非流式模型：录音期间显示状态，停止后才产生最终转写。由于尚未在实体手表完成本地推理验证，Whisper tiny也标为“尚未真机验证”，仅Debug构建提供明确标注的实验录音入口；Release构建禁用录音。其余七组在Watch端标为不可用。
+ASRtest原创App源码采用[Apache License 2.0](LICENSE)。第三方源码、运行库和权重分别适用自身条款，项目许可证不覆盖它们。
 
-Watch运行库源码为 `Vendor/whisper.cpp` 固定commit `927cfce34f31707e17f2bff35c349632fb9e2c3a`，MIT许可见 `Vendor/whisper.cpp/LICENSE` 和 `WatchWhisperRuntime/WHISPER_LICENSE.txt`。`WatchWhisperRuntime/WatchWhisper.xcframework` 含watchOS设备arm64/arm64_32与模拟器arm64/x86_64静态库；可通过 `WatchWhisperRuntime/build.sh` 从仓库内源码重建。CPU、无Metal/Accelerate，具体构建参数见 `WatchWhisperRuntime/README.md`。Watch模型复用 `ModelLibrary/whisperTiny/ggml-tiny.bin`，来源为 `ModelsManifest.json` 固定的Hugging Face revision `5359861c739e955e79d9a303bcbc70fb988958b1`，SHA256为 `be07e048e1e599ad46341c8d2a135645097a538221678b7acdd1b1919c6e1b21`；[模型仓库页面](https://huggingface.co/ggerganov/whisper.cpp) 标注MIT。Watch App构建产物中只有这一份77,691,713字节的模型，没有把八组约1.857 GB权重复制到手表。
+完整说明见[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)、[Vendor源码来源](Vendor/SOURCES.md)及[Android后端来源](Licenses/android/ENGINE-DEPENDENCIES.md)。SenseVoice固定ONNX权重的授权范围、iOS社区Vosk二进制的底层来源与传递依赖告知仍需在公开分发对应资源前补齐；Git LFS和格式转换不改变再分发义务。
 
-手表界面有左右滑动的模型、转写、日志、设置四页。日志先写手表本地；用户点击导出后区分“已排队”“已传送，待iPhone确认”“iPhone已接收”。只有iPhone成功写入日志并回传确认后，日志才在iOS“查看Apple Watch上的日志”中显示。由于Whisper tiny非流式，`partials` 为空是正常现象，不应理解为实时识别。
-
-## 7. 已完成的验证与边界
-
-验证日期：2026-09-20。下列文件保留实际输出；识别文本中出现错误也原样保留，不将“程序完成推理”解释为“识别准确”。
-
-| 验证 | 证据 |
-|---|---|
-| 全模型内置App的iOS device、arm64 Simulator构建成功 | `Tests/app-device-build.log`、`Tests/UITests/last-run.json` 中本轮目录的 `build.log` |
-| 原生三页导航、八组模型入口、浅色与深色界面；通过界面切换Whisper tiny与Zipformer并完成加载 | `Tests/UITests/last-run.json`、`Preview/ui-test-light.png`、`Preview/ui-test-dark.png` |
-| 两份实际App Bundle均包含八组、42个模型文件，合计1,857,000,819字节，逐文件SHA256全部正确 | `Tests/bundled-models-verification.json` |
-| 三套原有运行库同进程创建、释放；静态冲突及shared解决 | `Tests/runtime-static-link.log`、`Tests/runtime-shared-device.log`、`Tests/runtime-shared-simulator.log`、`Tests/runtime-integration.md` |
-| 七组标准后端的重复识别、空输入、取消后复用、流式断句及短尾处理 | `Tests/standard-engine-verification.json`、`Tests/standard-engine-smoke.log` |
-| 从最终App资源复制的八组模型通过统一核心识别；16 kHz与模拟48 kHz重采样输入、保存记录、取消/异常后再次使用，包括Nano | `Tests/core-smoke-verification.json`、`Tests/core-smoke.log` |
-| 全内置ModelStore仅从Bundle读取；缺失和篡改拒绝、旧副本不干扰、42个文件校验，以及日志保存与损坏容错 | `Tests/model-store-verification.json`、`Tests/model-store-smoke.log` |
-| Nano本地C ABI、取消、静音，以及与Whisper同进程共存 | `Tests/nano/smoke.log`、`Tests/nano/macos-results.json`、`Tests/nano/coexist.log` |
-
-界面回归可运行 `Scripts/run-ui-smoke.sh`，覆盖页面导航、模型选择与浅深色截图，不启动麦克风录音。内置模型读取与日志回归可运行 `Scripts/run-model-store-smoke.sh`。可复跑的识别脚本：`Tests/run-standard-engine-smoke.sh` 与 `Tests/run-core-smoke.sh` 需要依次传入英文及中英混说WAV的绝对路径（16 kHz单声道），并启动arm64 Simulator。识别脚本可通过 `SHERPA_ARTIFACTS` 指定本机SPM `SourcePackages/artifacts` 路径；核心和存储回归可通过 `BUNDLED_MODELS_ROOT` 指定已构建App的 `ModelLibrary` 路径，以核对实际成品资源。Nano原生测试可在 `python3 Scripts/build-nano.py --macos` 后运行 `python3 Tests/nano/smoke.py` 和 `python3 Tests/nano/coexist.py`。
-当前底层识别证据覆盖本地文件推理、框架共存、会话生命周期和记录写入。物理iPhone的麦克风、蓝牙/外接输入、持续运行、内存峰值、耗电、发热和准确率对比仍需实机测试；尤其Nano仍标为实验性移植。未使用云端结果代替本地结果。
-
-### 本次扩展验证（2026-09-23）
-
-本次iOS device、iOS Simulator、watchOS device Release和watchOS Simulator Debug构建均通过。全量iPhone App含清单中的42个模型文件、1,857,000,819字节，另有Nano元数据和一个空的 `.gitkeep`；App嵌入Watch App，Watch App只含一份 `ggml-tiny.bin`，其SHA256与清单一致，核对见 `Tests/2026-09-23-expansion/final-bundle-verify.json`。为先安装iPhone版，曾暂时取消Watch嵌入，在独立构建目录完成无签名与开发签名设备构建，确认产物无 `Watch` 目录，并已安装到连接的实体iPhone；此后工程的Watch依赖与嵌入配置已恢复。安装成功不代表已在设备上完成麦克风或识别实测。watchOS device和Simulator运行库分别从固定源码编出并合成XCFramework。日志存储与ZIP的独立回归已检查批量组JSON、会话JSON/JSONL及双向ID关联，删除批量组后相应会话消失；ZIP不含模型和原始音频。构建输出及校验记录保存在 `Tests/2026-09-23-expansion/`。
-模拟器UI回归已通过：iPhone的三页导航和模型切换；iPad宽屏左右布局；两段WAV逐文件识别、损坏WAV后继续、主动停止，以及保留相同文件切换Zipformer/Whisper tiny再测一轮。模拟器实际落盘的两个模型批次均有独立组ID，每条成功识别的记录都有对应JSON/JSONL和正确的组关联；停止用例中当前文件记为“已停止”，下一文件记为“未运行”。相关测试日志包括 `iphone-primary-ui-test.log`、`ipad-layout-ui-test-final.log`、`ipad-batch-ui-test.log`、`ipad-batch-failure-stop-ui-test.log`、`ipad-batch-rerun-ui-test.log` 和 `ipad-batch-stop-final3.log`。
-watchOS 27模拟器的Debug静音自检已实际在Watch App内加载模型并执行2秒音频的本地Whisper推理，返回成功；结果见 `Tests/2026-09-23-expansion/watch-simulator-silent-smoke.json`，其中识别调用约1004 ms。静音输入没有转写文字是预期结果，这只证明模拟器上的模型加载与推理路径，不证明中文/英文识别质量，也不是物理手表的耗时。Debug可用启动参数 `ASRTEST_WATCH_SMOKE` 复现自检；普通使用不会自动运行。
-
-尚未将“编译通过”视作“真机推理成功”：目标iPad的动态字体和分屏仍待检查。已配对的实体Apple Watch可被开发工具发现，但本次签名构建遇到免费开发团队 **7天内最多10个App ID** 的限制，新的Watch Bundle ID未获得provisioning profile，故未安装或运行Watch App。Watch麦克风授权、Whisper tiny在物理手表上的加载、中文和英文最终转写、耗时与内存都需真机逐项验证。已配对模拟器中Watch日志完成传送回调，但iPhone尚未返回入库确认，因此日志同步的端到端成功**尚未验证**；手表界面会保持“已传送，待iPhone确认”，不会误报“iPhone已接收”，可再次点击导出。批量WAV的交互、停止时机和各后端完整推理也仍需在目标iPhone/iPad上跑真实语音回归；模拟器静音样本和ZIP结构回归不能替代这些实测。
-
-## 8. 常见问题
-
-- **无法安装，提示免费开发者配置已达到最大App数量**：此前设备报错列出三个免费签名App。先导出旧App中需要的日志，再自行删除不再使用的旧测试App，然后重试安装ASRtest。整合工程不会自动删除旧App或迁移它们的沙盒数据。
-- **内置模型缺失或校验失败**：检查本次构建是否完整包含 `ModelLibrary` 和资源清单，重新校验并构建App。手机端无需寻找、选择或获取模型文件；此错误通常说明工程资源或安装内容不完整。
-- **安装或复制时间较长**：八组模型约1.857 GB，首次构建、USB安装与部署会比原三个小App更大、更慢；为Xcode构建产物和设备安装留足空间。
-- **麦克风无输入**：检查系统麦克风权限；在模型就绪后查看“设置 → 麦克风输入”，可手动刷新。对比测试建议始终采用同一手机内建麦克风和录音距离。
-- **非流式模型录音时没有文字**：Whisper、SenseVoice、Nano会在停止后转写，属于当前明确的处理方式。等待本轮完成后再比较最终文字。
-- **Nano的加载或转写压力较大**：它的模型文件接近1 GB，文件大小不等于运行内存。先从短句开始，在目标iPhone上记录实际内存与温升，再决定是否适合长时间使用。
+模型和框架来源：[sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)、[whisper.cpp](https://github.com/ggml-org/whisper.cpp)、[Vosk](https://github.com/alphacep/vosk-api)、[SenseVoice](https://github.com/QwenAudio/SenseVoice)、[FunASR](https://github.com/modelscope/FunASR)、[Fun-ASR](https://github.com/QwenAudio/Fun-ASR)。

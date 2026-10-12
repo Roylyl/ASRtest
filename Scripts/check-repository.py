@@ -10,7 +10,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-LFS_SUFFIXES = {".onnx", ".gguf", ".bin", ".fst", ".mdl", ".ie", ".dubm", ".mat", ".a"}
+LFS_SUFFIXES = {".onnx", ".gguf", ".bin", ".fst", ".mdl", ".ie", ".dubm", ".mat", ".a", ".so", ".aar"}
 LFS_EXECUTABLES = {"whisper", "CNano"}
 
 
@@ -68,19 +68,15 @@ def main() -> int:
             gitlinks.append(relative)
     require(not gitlinks, "gitlinks are not allowed: " + ", ".join(gitlinks), errors)
 
-    models = load_json("ModelsManifest.json")
-    bundled_manifest = ROOT / "ASRtest/ModelsManifest.json"
-    require(
-        bundled_manifest.read_bytes() == (ROOT / "ModelsManifest.json").read_bytes(),
-        "ASRtest/ModelsManifest.json differs from the repository manifest",
-        errors,
-    )
+    models = load_json("shared/assets/ModelsManifest.json")
+    require("shared/assets/ModelsManifest.json" in tracked,
+            "shared model manifest is not tracked", errors)
     for model in models["models"]:
         for item in model["files"]:
-            relative = f"ModelLibrary/{model['id']}/{item['path']}"
+            relative = f"shared/assets/ModelLibrary/{model['id']}/{item['path']}"
             require(relative in tracked, f"model manifest path is not tracked: {relative}", errors)
 
-    runtimes = load_json("RuntimeArtifactsManifest.json")
+    runtimes = load_json("apps/ios/RuntimeArtifactsManifest.json")
     for runtime in runtimes["runtimes"]:
         for item in runtime["artifact_identity"]["files"]:
             relative = f"{runtime['path'].rstrip('/')}/{item}"

@@ -2,12 +2,14 @@
 """Build isolated native Nano frameworks. --macos adds a native smoke-test build."""
 from pathlib import Path
 import argparse
+import json
 import plistlib
 import shutil
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
-PACKAGE = ROOT / "Packages/NanoRuntime"
+IOS_ROOT = ROOT / "apps/ios"
+PACKAGE = IOS_ROOT / "Packages/NanoRuntime"
 BUILD = PACKAGE / ".build-native"
 FUNASR_REV = "0339018ba74a7defa3b6b6a96718d17b816be77b"
 LLAMA_REV = "8086439a4cea94c71a5dfb8fe4ad1546aebd640f"
@@ -16,7 +18,15 @@ def run(args):
     subprocess.run([str(x) for x in args], check=True)
 
 def checkout(path, url, revision):
+    marker = path / ".asrtest-upstream.json"
+    if marker.is_file():
+        source = json.loads(marker.read_text())
+        if source.get("repo") != url or source.get("commit") != revision:
+            raise RuntimeError(f"Unexpected vendored source revision at {path}")
+        return
     if not (path / ".git").exists():
+        if path.exists() and any(path.iterdir()):
+            raise RuntimeError(f"Source directory is nonempty but has no source marker: {path}")
         path.mkdir(parents=True, exist_ok=True)
         run(["git", "init", path])
         run(["git", "-C", path, "remote", "add", "origin", url])

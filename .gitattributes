@@ -4,8 +4,8 @@
 # These trees carry checksummed or fixed-revision upstream bytes. Do not let
 # platform line-ending conversion change the material represented by manifests
 # and archive hashes.
-ModelLibrary/** -text
-Packages/**/*.xcframework/** -text
+shared/assets/ModelLibrary/** -text
+apps/ios/Packages/**/*.xcframework/** -text
 Vendor/** -text
 
 # Model weights and compiled runtimes are versioned with Git LFS. Keep these
@@ -21,3 +21,8 @@ Vendor/** -text
 *.a filter=lfs diff=lfs merge=lfs -text
 **/whisper.framework/whisper filter=lfs diff=lfs merge=lfs -text
 **/CNano.framework/CNano filter=lfs diff=lfs merge=lfs -text
+
+apps/ios/WatchWhisperRuntime/**/*.xcframework/** -text
+apps/android/app/src/main/jniLibs/** -text
+*.so filter=lfs diff=lfs merge=lfs -text
+*.aar filter=lfs diff=lfs merge=lfs -text

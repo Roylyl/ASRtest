@@ -2,15 +2,20 @@
 """Adapt only the pinned official CLI's native inference core; leave vendor pristine."""
 from pathlib import Path
 import subprocess
+import json
 import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
+IOS_ROOT = ROOT / "apps/ios"
 VENDOR = ROOT / "Vendor/Fun-ASR"
-OUT = ROOT / "Packages/NanoRuntime/Sources/CNano"
+OUT = IOS_ROOT / "Packages/NanoRuntime/Sources/CNano"
 REV = "0339018ba74a7defa3b6b6a96718d17b816be77b"
 LLAMA_REV = "8086439a4cea94c71a5dfb8fe4ad1546aebd640f"
 for path, rev in [(VENDOR, REV), (VENDOR / "third_party/llama.cpp", LLAMA_REV)]:
-    if subprocess.check_output(["git", "-C", str(path), "rev-parse", "HEAD"], text=True).strip() != rev:
+    marker = path / ".asrtest-upstream.json"
+    actual = (json.loads(marker.read_text()).get("commit") if marker.is_file()
+              else subprocess.check_output(["git", "-C", str(path), "rev-parse", "HEAD"], text=True).strip())
+    if actual != rev:
         raise SystemExit(f"Unexpected source revision at {path}")
 
 s = (VENDOR / "runtime/llama.cpp/funasr-cli/funasr-cli.cpp").read_text()
@@ -77,6 +82,6 @@ if not (OUT / "nano_core.cpp").exists() or (OUT / "nano_core.cpp").read_text() !
 vad_source = VENDOR / "runtime/llama.cpp/funasr-common/funasr_vad.h"
 if not (OUT / "funasr_vad.h").exists() or (OUT / "funasr_vad.h").read_bytes() != vad_source.read_bytes():
     shutil.copyfile(vad_source, OUT / "funasr_vad.h")
-shutil.copyfile(VENDOR / "LICENSE", ROOT / "Packages/NanoRuntime/LICENSE-Fun-ASR")
-shutil.copyfile(VENDOR / "third_party/llama.cpp/LICENSE", ROOT / "Packages/NanoRuntime/LICENSE-llama.cpp")
+shutil.copyfile(VENDOR / "LICENSE", IOS_ROOT / "Packages/NanoRuntime/LICENSE-Fun-ASR")
+shutil.copyfile(VENDOR / "third_party/llama.cpp/LICENSE", IOS_ROOT / "Packages/NanoRuntime/LICENSE-llama.cpp")
 print("Prepared Nano native inference core from pinned sources")

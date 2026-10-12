@@ -1,0 +1,46 @@
+[
+  {
+    "id": "zh_short",
+    "file": "zh_short.wav",
+    "reference": "今天下午三点，请提醒我参加项目会议。",
+    "language": "zh",
+    "source": "macOS say local synthesized speech; Tingting",
+    "isSynthetic": true,
+    "sampleRate": 16000,
+    "channels": 1,
+    "durationSeconds": 5.4285625
+  },
+  {
+    "id": "zh_numbers",
+    "file": "zh_numbers.wav",
+    "reference": "这台手机售价两千三百元，订单编号是一二三四五六。",
+    "language": "zh",
+    "source": "macOS say local synthesized speech; Tingting",
+    "isSynthetic": true,
+    "sampleRate": 16000,
+    "channels": 1,
+    "durationSeconds": 6.7571875
+  },
+  {
+    "id": "en_short",
+    "file": "en_short.wav",
+    "reference": "Please remind me to attend the project meeting at three this afternoon.",
+    "language": "en",
+    "source": "macOS say local synthesized speech; Samantha",
+    "isSynthetic": true,
+    "sampleRate": 16000,
+    "channels": 1,
+    "durationSeconds": 4.724875
+  },
+  {
+    "id": "mixed_short",
+    "file": "mixed_short.wav",
+    "reference": "请打开蓝牙，连接我的Bluetooth speaker，然后播放音乐。",
+    "language": "mixed",
+    "source": "macOS say local synthesized speech; Tingting+Samantha+Tingting",
+    "isSynthetic": true,
+    "sampleRate": 16000,
+    "channels": 1,
+    "durationSeconds": 6.5151875
+  }
+]

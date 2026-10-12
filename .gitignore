@@ -32,7 +32,7 @@ build/
 *.swiftsourceinfo
 *.abi.json
 # Personal signing, credentials and local evidence
-/Config/Local.xcconfig
+/apps/ios/Config/Local.xcconfig
 /LocalBackup/
 .env
 .env.*
@@ -45,36 +45,36 @@ build/
 *.mobileprovision
 *.provisionprofile
 # Test outputs may contain speech, machine paths, simulator IDs and device data
-/Tests/**/*.json
-/Tests/**/*.jsonl
-/Tests/**/*.log
-/Tests/core-smoke/
-/Tests/model-store-build/
-/Tests/UITests/Artifacts/
-/Tests/runtime-link-shared-device
-/Tests/runtime-link-shared-simulator
-/Tests/runtime-link-static-device
-/Tests/runtime-link-static-simulator
-/Tests/standard-engine-smoke
-/Tests/nano/swift-simulator
-/Tests/nano/coexist-simulator
+/apps/ios/Tests/**/*.json
+/apps/ios/Tests/**/*.jsonl
+/apps/ios/Tests/**/*.log
+/apps/ios/Tests/core-smoke/
+/apps/ios/Tests/model-store-build/
+/apps/ios/Tests/UITests/Artifacts/
+/apps/ios/Tests/runtime-link-shared-device
+/apps/ios/Tests/runtime-link-shared-simulator
+/apps/ios/Tests/runtime-link-static-device
+/apps/ios/Tests/runtime-link-static-simulator
+/apps/ios/Tests/standard-engine-smoke
+/apps/ios/Tests/nano/swift-simulator
+/apps/ios/Tests/nano/coexist-simulator
 *.f32
-/Tests/**/*.wav
-/Tests/**/*.mp3
-/Tests/**/*.m4a
-/Tests/**/*.pcm
-/Tests/**/*.png
-/Tests/2026-09-23-expansion/project.pbxproj-before-iphone-only
+/apps/ios/Tests/**/*.wav
+/apps/ios/Tests/**/*.mp3
+/apps/ios/Tests/**/*.m4a
+/apps/ios/Tests/**/*.pcm
+/apps/ios/Tests/**/*.png
+/apps/ios/Tests/2026-09-23-expansion/project.pbxproj-before-iphone-only
 # Superseded reports and non-public generated screenshots
-/Documentation/*调整前*
-/Documentation/*更新前*
-/Preview/*
-!/Preview/ui-test-light.png
-!/Preview/ui-test-dark.png
-!/Preview/ui-model-selector-light.png
-!/Preview/ui-logs-light.png
-!/Preview/ui-settings-light.png
-!/Preview/ui-models-light.png
+/docs/*调整前*
+/docs/*更新前*
+/docs/screenshots/ios/*
+!/docs/screenshots/ios/ui-test-light.png
+!/docs/screenshots/ios/ui-test-dark.png
+!/docs/screenshots/ios/ui-model-selector-light.png
+!/docs/screenshots/ios/ui-logs-light.png
+!/docs/screenshots/ios/ui-settings-light.png
+!/docs/screenshots/ios/ui-models-light.png
 # Python / CMake caches
 __pycache__/
 *.py[cod]
@@ -96,8 +96,37 @@ Vendor/**/.DS_Store
 
 # XCFrameworks are released project artifacts. Repository rules override a
 # developer's global *.a ignore so every declared slice remains versioned.
-!/Packages/**/*.xcframework/
-!/Packages/**/*.xcframework/**
-!/WatchWhisperRuntime/
-!/WatchWhisperRuntime/WatchWhisper.xcframework/
-!/WatchWhisperRuntime/WatchWhisper.xcframework/**
+!/apps/ios/Packages/**/*.xcframework/
+!/apps/ios/Packages/**/*.xcframework/**
+!/apps/ios/WatchWhisperRuntime/
+!/apps/ios/WatchWhisperRuntime/WatchWhisper.xcframework/
+!/apps/ios/WatchWhisperRuntime/WatchWhisper.xcframework/**
+
+# Android local configuration and generated outputs
+.gradle/
+.kotlin/
+.cxx/
+.externalNativeBuild/
+local.properties
+*.iml
+*.apk
+*.aab
+*.jks
+*.keystore
+/apps/android/results/
+/apps/android/evaluation/runs/
+/apps/android/evaluation/report/
+/apps/android/dist/
+/apps/android/native/build.log
+# Superseded Android README is retained locally for migration reference only.
+/apps/android/README.before-monorepo.md
+
+# Platform-specific dependencies are checked-in runtime artifacts.
+!/apps/android/app/libs/
+!/apps/android/app/libs/*.aar
+!/apps/android/app/libs/*.jar
+!/apps/android/app/src/main/jniLibs/
+!/apps/android/app/src/main/jniLibs/**
+# Keep Finder metadata ignored even inside explicitly preserved artifacts.
+.DS_Store
+._*

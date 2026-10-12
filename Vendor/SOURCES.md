@@ -38,3 +38,6 @@ Fun-ASR-Nano is the exception to the review-only copies above: `NanoRuntime` use
 The `vosk-api` revision is a review reference. There is not enough provenance information in the community-provided iOS binary to claim that it was built from this exact revision. Keep that distinction in downstream notices and release documentation.
 
 The two static archives inside `react-native-vosk/ios/libvosk.xcframework` are large tracked binaries. A public Git host should store them with Git LFS; replacing them with pointer files in a working checkout will make the snapshot incomplete until Git LFS objects are fetched.
+
+## 双平台复用
+iOS和Android共用固定版本的`Vendor/whisper.cpp`以及`Vendor/Fun-ASR/third_party/llama.cpp`源码。iOS构建封装位于`apps/ios/Packages`，Android的JNI封装及构建配置位于`apps/android/native`；两端分别生成各自平台的运行库。不同组件依赖的GGML版本保持独立，不能互换预编译库。

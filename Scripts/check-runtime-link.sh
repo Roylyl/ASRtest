@@ -1,7 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-ARTIFACTS="${SHERPA_ARTIFACTS:-/Users/roylyl/Documents/ChatGPT/ln/android-validation/ios-build/SourcePackages/artifacts}"
+IOS_ROOT="$ROOT/apps/ios"
+ARTIFACTS="${SHERPA_ARTIFACTS:-$ROOT/.build/ios/SourcePackages/artifacts}"
 MODE="${1:-static}"
 PLATFORM="${2:-simulator}"
 if [[ "$MODE" == shared ]]; then SUFFIX=Shared; else SUFFIX=; fi
@@ -12,15 +13,15 @@ else
 fi
 SHERPA="$ARTIFACTS/sherpa-onnx/SherpaOnnxIOS$SUFFIX/sherpa-onnx.xcframework/$SLICE"
 ORT="$ARTIFACTS/onnxruntime-libs/OnnxruntimeIOS$SUFFIX/onnxruntime.xcframework/$SLICE"
-WHISPER="$ROOT/Packages/WhisperRuntime/whisper.xcframework/$WHISPER_SLICE"
-VOSK="$ROOT/Packages/VoskRuntime/libvosk.xcframework/$VOSK_SLICE"
-OUT="$ROOT/Tests/runtime-link-$MODE-$PLATFORM"
+WHISPER="$IOS_ROOT/Packages/WhisperRuntime/whisper.xcframework/$WHISPER_SLICE"
+VOSK="$IOS_ROOT/Packages/VoskRuntime/libvosk.xcframework/$VOSK_SLICE"
+OUT="$IOS_ROOT/Tests/runtime-link-$MODE-$PLATFORM"
 xcrun --sdk "$SDK" clang -target "$TARGET" -isysroot "$(xcrun --sdk "$SDK" --show-sdk-path)" \
- "$ROOT/Tests/runtime-link-smoke.c" -F "$SHERPA" -F "$ORT" -F "$WHISPER" -I "$VOSK/Headers" \
+ "$IOS_ROOT/Tests/runtime-link-smoke.c" -F "$SHERPA" -F "$ORT" -F "$WHISPER" -I "$VOSK/Headers" \
  -framework SherpaOnnxC -framework onnxruntime -framework whisper "$VOSK/libvosk.a" \
  -framework Accelerate -framework Foundation -framework CoreML -lc++ \
  -Wl,-rpath,"$SHERPA" -Wl,-rpath,"$ORT" -o "$OUT"
 echo "LINK PASS $MODE $PLATFORM: $OUT"
 if [[ "$PLATFORM" == simulator && "${RUN_SMOKE:-0}" == 1 ]]; then
- xcrun simctl spawn booted "$OUT" "$ROOT/ModelLibrary"
+ xcrun simctl spawn booted "$OUT" "$ROOT/shared/assets/ModelLibrary"
 fi

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="asr_blue">#0A84FF</color>
+    <color name="asr_background">#000000</color>
+    <color name="asr_surface">#1C1C1E</color>
+    <color name="asr_text">#F5F5F7</color>
+    <color name="asr_secondary">#AEAEB2</color>
+</resources>

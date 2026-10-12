@@ -1,19 +1,25 @@
 #!/bin/bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SIMULATOR="${ASR_UI_SIMULATOR:-A2BE9010-4447-4DA5-971A-A76721DE2BF7}"
-DERIVED="${ASR_UI_DERIVED_DATA:-/Users/roylyl/Documents/ChatGPT/ln/android-validation/asrtest-unified-ui}"
-PACKAGES="${ASR_UI_SOURCE_PACKAGES:-/Users/roylyl/Documents/ChatGPT/ln/android-validation/ios-build/SourcePackages}"
+IOS_ROOT="$ROOT/apps/ios"
+if [[ -n "${ASR_UI_SIMULATOR:-}" ]]; then
+    SIMULATOR="$(python3 "$ROOT/Scripts/select-ios-simulator.py" --udid "$ASR_UI_SIMULATOR")"
+else
+    SIMULATOR="$(python3 "$ROOT/Scripts/select-ios-simulator.py")"
+fi
+DERIVED="${ASR_UI_DERIVED_DATA:-$ROOT/.build/ios-ui}"
+PACKAGES="${ASR_UI_SOURCE_PACKAGES:-$ROOT/.build/ios/SourcePackages}"
 RUN_ID="$(date +%Y%m%d-%H%M%S)"
-OUT="$ROOT/Tests/UITests/Artifacts/$RUN_ID"
-mkdir -p "$OUT" "$ROOT/Preview"
+OUT="$IOS_ROOT/Tests/UITests/Artifacts/$RUN_ID"
+mkdir -p "$OUT" "$ROOT/docs/screenshots/ios"
 python3 - "$ROOT" "$OUT" <<'PY'
 from pathlib import Path
 import hashlib,json,sys
 root,out=map(Path,sys.argv[1:])
-files=sorted((root/'ASRtest').glob('*.swift'))
-files += [root/'Tests/UITests/ASRtestUITests.swift', root/'Scripts/run-ui-smoke.sh', root/'ASRtest.xcodeproj/project.pbxproj']
-files += sorted((root/'ASRtest.xcodeproj/xcshareddata/xcschemes').glob('*.xcscheme'))
+ios=root/'apps/ios'
+files=sorted((ios/'ASRtest').glob('*.swift'))
+files += [ios/'Tests/UITests/ASRtestUITests.swift', root/'Scripts/run-ui-smoke.sh', ios/'ASRtest.xcodeproj/project.pbxproj']
+files += sorted((ios/'ASRtest.xcodeproj/xcshareddata/xcschemes').glob('*.xcscheme'))
 hashes={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
 (out/'source-sha256.json').write_text(json.dumps(hashes,ensure_ascii=False,indent=2)+'\n')
 PY
@@ -22,7 +28,7 @@ xcrun simctl bootstatus "$SIMULATOR" -b
 ORIGINAL_APPEARANCE="$(xcrun simctl ui "$SIMULATOR" appearance | tr '[:upper:]' '[:lower:]')"
 case "$ORIGINAL_APPEARANCE" in light|dark) ;; *) ORIGINAL_APPEARANCE=light ;; esac
 trap 'xcrun simctl ui "$SIMULATOR" appearance "$ORIGINAL_APPEARANCE" >/dev/null 2>&1 || true' EXIT
-COMMON=(-project "$ROOT/ASRtest.xcodeproj" -scheme ASRtestUISmoke -configuration Debug
+COMMON=(-project "$IOS_ROOT/ASRtest.xcodeproj" -scheme ASRtestUISmoke -configuration Debug
         -destination "platform=iOS Simulator,id=$SIMULATOR" -derivedDataPath "$DERIVED"
         -clonedSourcePackagesDirPath "$PACKAGES" -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO)
 xcodebuild "${COMMON[@]}" build-for-testing 2>&1 | tee "$OUT/build.log"
@@ -60,7 +66,7 @@ for mode in ['light','dark']:
             name=item['suggestedHumanReadableName']
             for expected_name in expected:
                 if expected_name in name:
-                    target=root/'Preview'/('ui-'+expected_name+'.png')
+                    target=root/'docs/screenshots/ios'/('ui-'+expected_name+'.png')
                     shutil.copyfile(source,target)
                     shots[expected_name]={'path':str(target),'sha256':hashlib.sha256(target.read_bytes()).hexdigest()}
 missing=set(expected)-set(shots)
@@ -70,6 +76,6 @@ report={'scheme':'ASRtestUISmoke','target':'ASRtestUITests','simulator_id':sim,
         'passed_tests':2,'failed_tests':0,'source_sha256':hashes,'sources_unchanged_during_test':True,
         'checks':['three native tabs','log and model-information segments','eight model picker entries reachable','settings switches real model to Whisper tiny; Test reflects selection and ready state; restored Zipformer','bundled-only settings without import/download actions','stopped recording state','light and dark screenshots'],
         'screenshots':shots}
-(root/'Tests/UITests/last-run.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
-print('UI SMOKE PASS; screenshots copied to '+str(root/'Preview'))
+(root/'apps/ios/Tests/UITests/last-run.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+print('UI SMOKE PASS; screenshots copied to '+str(root/'docs/screenshots/ios'))
 PY

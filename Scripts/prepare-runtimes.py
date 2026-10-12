@@ -158,7 +158,7 @@ def main():
     args = parser.parse_args()
     if args.replace and not args.source_root:
         parser.error("--replace requires --from")
-    manifest = json.loads((ROOT / "RuntimeArtifactsManifest.json").read_text())
+    manifest = json.loads((ROOT / "apps/ios/RuntimeArtifactsManifest.json").read_text())
     runtimes = [entry for entry in manifest["runtimes"] if args.runtime in {"all", entry["id"]}]
     failures = []
     for runtime in runtimes:
