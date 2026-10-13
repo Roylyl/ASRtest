@@ -356,7 +356,7 @@ class MainActivity:Activity() {
         })
         section(page,"关于ASRtest")
         page.addView(card().apply{
-            val heading=row();heading.addView(title("ASRtest",20f),LinearLayout.LayoutParams(0,-2,1f));heading.addView(badge("1.0.0",secondaryColor));addView(heading)
+            val heading=row();heading.addView(title("ASRtest",20f),LinearLayout.LayoutParams(0,-2,1f));heading.addView(badge(BuildConfig.VERSION_NAME,secondaryColor));addView(heading)
             addView(secondary("全部识别在本地运行，模型随APK集成。",13f));gap(this,8)
             addView(secondary("内存记录本进程RSS，每100ms采样；模型加载耗时单独记录。RTF使用实际识别耗时除以音频时长。",12f))
             addView(secondary("FLOPs/MIPS需独立统计，不从耗时反推。",12f))

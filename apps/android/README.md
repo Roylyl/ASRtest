@@ -10,4 +10,4 @@ Android Studio打开本目录，将Gradle JDK设置为JDK17。也可从仓库根
 ./Scripts/build-android.sh
 adb install -r -g apps/android/app/build/outputs/apk/debug/app-debug.apk
 ```
-最低Android8.0，仅支持arm64-v8a。版本1.0.0，模型与识别均在手机本地运行。
+最低Android8.0，仅支持arm64-v8a。版本2.0.0，模型与识别均在手机本地运行。

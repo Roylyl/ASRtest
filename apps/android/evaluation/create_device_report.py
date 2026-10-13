@@ -70,7 +70,7 @@ def main():
     lines += ['语音由本机macOS的Tingting/Samantha合成，混合句由中文/英文片段拼接；16kHz单声道WAV。后续加入手机真实录音，人工确认参考文字后，用同一录音逐模型重测。应分别观察安静/噪声、距离、长句及中英混说，并保留失败和完整文字，避免只看一个总分。',
         '## 四、文件与证据',
         f'工程：{ROOT}',
-        f'APK：{ROOT}/dist/ASRtest-1.0.0-arm64-debug.apk',
+        f'当前构建APK：{ROOT}/dist/ASRtest-2.0.0-arm64-debug.apk',
         f'完整原始结果、JSONL和驱动元数据：{ROOT}/evaluation/runs/full-device-run/',
         f'逐条CSV、按语言汇总CSV及完整转写：{ROOT}/evaluation/runs/full-device-run/report/',
         f'模型参数与原理统计：{ROOT}/results/模型参数与统计口径.md',
